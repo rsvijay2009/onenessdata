@@ -1,0 +1,9 @@
+table th input[type="checkbox"] {
+    margin-right: 10px;
+}
+table tr td input[type="checkbox"] {
+    margin-right: 10px;
+}
+.form-select {
+    width: 60%; 
+}

@@ -1,0 +1,91 @@
+.menu-item {
+    /* padding:10px; */
+}
+.sub-menu {
+    font-size:14px;
+    margin:15px;
+}
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 10%;
+    box-sizing: border-box;
+    transition: background-color 0.3s;
+}
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+.sidebar {
+    width: 17.8%;
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    background-color: #E7E9EB;
+}
+.submenu {
+    transition: max-height 0.5s ease-in-out;
+    overflow: hidden;
+}
+.nav-link[data-bs-toggle].collapsed + .submenu {
+    max-height: 0;
+}
+.nav-link[data-bs-toggle]:not(.collapsed) + .submenu {
+    max-height: 1000px; /* Adjust this value based on your content size */
+}
+.nav-link {
+    color:black;
+}
+.logo-data {
+    font-size: 25px;
+    font-weight:bold;
+    background: linear-gradient(to right, #258B27 43%, #F01815 40%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+}
+.nav-link-font {
+    font-size: 15px;
+}
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+.project-delete {
+    cursor: pointer;
+    text-decoration: none;
+    color:red;
+    max-width: 140px;
+    max-height: 38px;
+    font-weight: bold;
+    border-radius: 10px;
+}
+.notification-success-banner {
+    width: 100%;
+    background-color: #4CAF50;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.notification-error-banner {
+    width: 100%;
+    background-color:rgb(227, 13, 13);
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+

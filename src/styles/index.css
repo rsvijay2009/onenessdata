@@ -1,0 +1,12 @@
+.errorMsg {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+    font-weight: bold;
+    color: red;
+}
+.successMsg {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+    font-weight: bold;
+    color: green;
+}

@@ -1,0 +1,41 @@
+.card-body { 
+    height: 300px; 
+} 
+.card {
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin: 20px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    position: relative;
+    font-size: 15px;
+    max-height: 300px;
+}
+.card .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: top;
+    flex-direction:column;
+    min-height:280px;
+}
+.plus-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+}
+.errorMsg {
+    display:block;
+    color:red;
+    font-weight:bold;
+}
+.successMsg {
+    display:block;
+    color:green;
+    font-weight:bold;
+}

@@ -1,0 +1,77 @@
+
+.sticky-bar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 10px;
+}
+.card-body { 
+    height: 300px;
+}
+.card {
+    background-color: white;
+    margin: 10px;
+    text-align: center;
+}
+.card .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: top;
+    flex-direction:column;
+    min-height:280px;
+}
+.sticky-bar {
+    height: 20px;
+    margin: 10px 0;
+    background-color: #ccc;
+    border-radius: 5px;
+    color:white;
+    font-size:12px;
+    margin-bottom:-6px;
+}
+.gradient-sticky-bar {
+    flex-direction:column;
+    height: 15px;
+    margin: 10px 0;
+    background: linear-gradient(to right, green var(--percentage) , red 0%);
+    margin-bottom:-6px;
+    color:white;
+    font-size:12px;
+}
+.sticky-bar-1 {
+    flex-direction:column;
+    height: 15px;
+    margin: 10px 0;
+    background-color: #ccc;
+    margin-bottom:-6px;
+    color:white;
+    font-size:12px;
+}
+.card-title {
+    margin:10px;
+    padding:10px;
+    background:#E9EDF0;
+}
+.sticky-bar-container {
+    display: flex;
+    gap: 10px;
+}
+.table-name-link {
+    color:#71B6FA;
+    text-decoration:none;
+    font-size:14px;
+    cursor: pointer;
+}
+.view-table {
+    background-color: #5C6ABC;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 10%;
+    box-sizing: border-box;
+    transition: background-color 0.3s;
+}
+.view-table:hover {
+    background-color: #5C7BCD;
+}

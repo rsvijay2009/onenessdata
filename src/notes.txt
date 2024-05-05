@@ -1,0 +1,112 @@
+Merge task
+ - About the datatype of the dynamic columns
+ - CSV and xls format
+ - There is no gurantee that user will upload files with same number of columns(One file may contain 10 columns and another one may be 5)
+ - After do the MySql union the data is clumsy because of diffrent datatype and data
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GetDashboardData()
+BEGIN
+    DECLARE data_quality_correct_data INT DEFAULT 10;
+    DECLARE data_quality_incorrect_data INT DEFAULT 0;
+    DECLARE money_issue INT DEFAULT 5;
+    DECLARE alphanumeric_issue INT DEFAULT 0;
+    DECLARE string_issue INT DEFAULT 2;
+    DECLARE number_issue INT DEFAULT 0;
+    DECLARE duplicate_entries_issue INT DEFAULT 8;
+    DECLARE date_issue INT DEFAULT 0;
+    DECLARE email_issue INT DEFAULT 1;
+    DECLARE overall_correct_data INT DEFAULT 50;
+	DECLARE overall_incorrect_data INT DEFAULT 50;
+    SELECT data_quality_correct_data AS 'data_quality_correct_data', 
+    data_quality_incorrect_data AS 'data_quality_incorrect_data',
+    money_issue AS 'money_issue',
+    alphanumeric_issue AS 'alphanumeric_issue',
+    string_issue AS 'string_issue',
+    number_issue AS 'number_issue',
+    duplicate_entries_issue AS 'duplicate_entries_issue',
+    date_issue AS 'date_issue',
+    email_issue AS 'data_quality_correct_data',
+    overall_correct_data AS 'overall_correct_data',
+    overall_incorrect_data AS 'overall_incorrect_data';
+    
+END$$
+
+DELIMITER ;
+
+
+
+
+
+ CREATE TABLE projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE tables_list (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    project_id INT DEFAULT NULL,
+    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE datatypes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO datatypes (name, description)
+VALUES 
+    ('Text', 'Ex: ABCD ...'),
+    ('Number', 'Ex: 0123 ...'),
+    ('Date', 'Ex: DD:MM:YYYY ...'),
+    ('Alphanumeric', 'Ex: AB12C5 ...'),
+    ('Email', 'Ex: name@mail.com ...');
+
+
+CREATE TABLE table_datatypes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_id INT NOT NULL,
+    table_name VARCHAR(255) NOT NULL,
+    column_name  VARCHAR(255) NOT NULL,
+    datatype_id INT NOT NULL,
+    datatype VARCHAR(255) NOT NULL,
+    data_quality INT NOT NULL DEFAULT 0,
+    uniqueness INT NOT NULL DEFAULT 0,
+    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+1. side bar design change
+
+2. To have delete icon for each table and as well as for project
+
+3. Create two new columns as data_quality & uniqueness in table_datatypes table and put some random number
+
+4. Based on the number we need to color the sticky bar with gradient
+
+5. If I click on the link of any column in dashboard page then display a table with selected column and also have option to display
+all and specific items in dropdown
+
+
+
+1. Gradient for the data quality 
+2. View Table button link
+3. Edit option for columns and save option

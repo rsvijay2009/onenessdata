@@ -18,7 +18,6 @@ var droppedData = [null, null, null];
 function updateDroppedDataList() {
     var dataList = droppedData.filter(data => data !== null).join(", ");
     document.getElementById('selected_tables').value = dataList;
-    console.log("Dropped data list: " + dataList);
 }
 function drop(ev) {
     ev.preventDefault();

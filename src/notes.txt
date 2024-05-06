@@ -194,6 +194,9 @@ all and specific items in dropdown
 
 
 
-1. Gradient for the data quality 
-2. View Table button link
+1. Gradient for the data quality - done
+2. View Table button link - done
+3. Auto increment id columns added while cretaing tables - done
+4. Select all option functionality - done
+5. Hightligh the row while click on the checkbox in csv columns page - done
 3. Edit option for columns and save option

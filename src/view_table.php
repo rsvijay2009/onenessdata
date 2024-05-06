@@ -39,10 +39,10 @@ if (empty($tableName)) {
         }
 
         // Fetch data with limit and offset
-        // $dataQuery = $pdo->prepare("SELECT * FROM $tableName LIMIT :perPage OFFSET :offset");
-        // $dataQuery->bindParam(':perPage', $perPage, PDO::PARAM_INT);
-        // $dataQuery->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $dataQuery = $pdo->prepare("SELECT * FROM $tableName");
+        $dataQuery = $pdo->prepare("SELECT * FROM $tableName LIMIT :perPage OFFSET :offset");
+        $dataQuery->bindParam(':perPage', $perPage, PDO::PARAM_INT);
+        $dataQuery->bindParam(':offset', $offset, PDO::PARAM_INT);
+        //$dataQuery = $pdo->prepare("SELECT * FROM $tableName");
         $dataQuery->execute();
         $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
     
@@ -65,25 +65,35 @@ include_once "header.php";
             <div style="padding:10px;">
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>
                 <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead style="background:#D8E3F4">
+                <table class="table">
+                    <thead>
                         <tr>
                             <?php foreach ($columns as $column): ?>
-                            <th><?= htmlspecialchars($column) ?></th>
+                                <th><?= htmlspecialchars($column) ?></th>
                             <?php endforeach; ?>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($data as $row): ?>
                             <tr>
-                                <?php foreach ($columns as $col): ?>
-                                    <td><?= htmlspecialchars($row[$col]) ?></td>
+                                <?php foreach ($columns as $column): ?>
+                                    <td>
+                                        <span class="non-editable"><?= htmlspecialchars($row[$column]) ?></span>
+                                        <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$column]) ?>" style="display: none;">
+                                        <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($column) ?>" style="display: none;">
+                                        <input type="hidden" id="tableId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key']) ?>" style="display: none;">
+                                    </td>
                                 <?php endforeach; ?>
+                                <td>
+                                    <button class="btn btn-primary edit-btn">Edit</button>
+                                    <button class="btn btn-success save-btn" style="display: none;">Save</button>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                    <!-- <nav aria-label="Page navigation example">
+                    <nav aria-label="Page navigation example">
                         <ul class="pagination">
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i === $page ? 'active' : '' ?>">
@@ -91,7 +101,7 @@ include_once "header.php";
                                 </li>
                             <?php endfor; ?>
                         </ul>
-                    </nav> -->
+                    </nav>
                 </div>
              </div>
         </div>
@@ -99,5 +109,39 @@ include_once "header.php";
 </div>
 <?php
 } ?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+    $('.edit-btn').click(function() {
+        var row = $(this).closest('tr');
+        row.find('.editable').show();
+        row.find('.non-editable').hide();
+        $(this).hide();
+        row.find('.save-btn').show();
+    });
+
+    $('.save-btn').click(function() {
+        var row = $(this).closest('tr');
+        var idToUpdate = row.find('input#tableId').val();
+        var updatedData = {};
+        row.find('input.editable#columnName').each(function() {
+            var input = $(this);
+            var key = input.val();
+            var value = input.prev().val().trim();
+            updatedData[key] = value;
+        });
+
+        // AJAX call to save data
+        $.post('ajax_save_table_data.php', {data: updatedData, table: '<?=$tableName?>', id: idToUpdate}, function(response) {
+            row.find('.editable').hide();
+            row.find('.non-editable').each(function() {
+                $(this).text($(this).next().val());
+            }).show();
+            row.find('.edit-btn').show();
+            row.find('.save-btn').hide();
+        });
+    });
+});
+</script>
 </body>
 </html>

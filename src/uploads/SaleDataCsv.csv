@@ -1,11 +1,11 @@
-ProductId,Region,FirstName,LastName,Product,Code,price,data
-1,Central,Vijay,Sigal,Video Games,55,58.5,"3,217.50"
-2,Central,Hermann,Shelli,Video Games,42,58.5,"2,457.00"
-3,West,Timothy,Stephen,Desk,3,125,375
-4,Central,Timothy,David,Television,7,"1,198.00","8,386.00"
-5,West,Timothy,Stephen,Cell Phone,76,225,"17,100.00"
-6,West,Douglas,Michael,Home Theater,57,500,"28,500.00"
-7,Central,Martha,Steven,Television,14,"1,198.00","16,772.00"
-8,Central,Hermann,Luis,Home Theater,11,500,"5,500.00"
-9,Central,Hermann,Luis,Home Theater,94,500,"47,000.00"
-10,Central,Martha,Steven,Home Theater,28,500,"14,000.00"
+Product,Code,price
+Video Games,55,58.5
+Video Games,42,58.5
+Desk,3,125
+Television,7,"1,198.00"
+Cell Phone,76,225
+Home Theater,57,500
+Television,14,"1,198.00"
+Home Theater,11,500
+Home Theater,94,500
+Home Theater,28,500

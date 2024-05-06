@@ -1,41 +1,46 @@
 <?php
 include_once "database.php";
 include_once "sidebar.php";
+
+
+$tableName = $_REQUEST['table'] ?? null;
+$columnName = $_REQUEST['column'] ?? null;
+$selectedColumns = [];
+$data = [];
+
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$tableName = $_REQUEST['table'];
-$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id')");
+$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id')");
 $columnQuery->execute();
 $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 
-// Get selected columns from the query parameters or default to a specific column
+if($tableName && $columnName) {
+    // Get selected columns from the query parameters or default to a specific column
+    $initialSelectedColumn = '';
+    if(!is_array($_REQUEST['column']) && $_REQUEST['column'] != '') {
+        $selectedColumns[] = $_REQUEST['column'];
+        $initialSelectedColumn = $_REQUEST['column'];
+    } else {
+        $selectedColumns = $_REQUEST['column'];
+    }
 
-if(!is_array($_REQUEST['column']) && $_REQUEST['column'] > 0) {
-    $selectedColumns[] = $_REQUEST['column'];
-} else {
-    $selectedColumns = $_REQUEST['column'];
+    $selectedColumns = array_intersect($selectedColumns, $columns);  // Ensure only valid columns are processed
+
+    // Fetch data for selected columns
+    if(!empty($selectedColumns)) {
+        $queryColumns = implode(', ', array_map(function($col) { return "`$col`"; }, $selectedColumns));
+    }
+    $dataQuery = $pdo->prepare("SELECT $queryColumns FROM `$tableName`");
+    $dataQuery->execute();
+    $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
 }
-
-$selectedColumns = array_intersect($selectedColumns, $columns);  // Ensure only valid columns are processed
-
-// Fetch data for selected columns
-$queryColumns = !empty($selectedColumns) ? implode(', ', array_map(function($col) { return "`$col`"; }, $selectedColumns)) : '`email`';  // Default column
-$dataQuery = $pdo->prepare("SELECT $queryColumns FROM `$tableName`");
-$dataQuery->execute();
-$data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dynamic Data Display</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
@@ -43,21 +48,20 @@ $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
         <div class="col-md-9">
             <!-- Table Below Cards -->
             <div style="padding:10px;">
-                <div class="table-responsive">
+                <div>
                 <div class="dropdown" style="display: flex; justify-content: flex-end;">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                         Select Columns
                     </button>
         
                     <form id="columnsForm" action="" method="get">
-                        <input type="hidden" name="initialSelecedColumn" id="initialSelecedColumn" value="<?=$_REQUEST['column']?>">
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <!-- <li>
+                                <li>
                                     <a class="dropdown-item">
                                         <input class="form-check-input" type="checkbox" name="column[]" value="all" id="selectAll">
                                         <label class="form-check-label" for="selectAll"> Select all</label>
                                     </a>
-                                </li> -->
+                                </li>
                             <?php foreach ($columns as $col): ?>
                                 <li>
                                     <a class="dropdown-item">
@@ -69,6 +73,7 @@ $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
                         </ul>
                     </form>
                 </div>
+                <?php if(!empty($selectedColumns) && !empty($data)) { ?>
                     <table class="table mt-3">
                         <thead>
                             <tr>
@@ -87,6 +92,9 @@ $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                <?php } else {?>
+                    <div style="margin-top:-30px; text-align:center; color:red;">Please select atleast one column to show data</div>
+                <?php } ?>
                 </div>
              </div>
         </div>
@@ -105,16 +113,10 @@ $(document).ready(function() {
             selectedColumns.push($(this).val());
         });
 
-        
-        if(selectedColumns == '') {
-            var initialSelecedColumn = document.getElementById('initialSelecedColumn').value;
-            var queryString = queryString + `column[]=${initialSelecedColumn}&table=<?=$_REQUEST['table']?>`;
-        } else {
-            var queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
-            var queryString = queryString + '&table=<?=$_REQUEST['table']?>';
-        }
-        console.log(queryString);
-        //window.location.search = queryString;     
+        var queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
+        queryString = queryString + '&table=<?=$_REQUEST['table']?>';
+
+        window.location.search = queryString;
     });
     $('.column-checkbox').on('change', function(e) {
         e.preventDefault();
@@ -123,7 +125,7 @@ $(document).ready(function() {
             selectedColumns.push($(this).val());
         });
         var queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
-        var queryString = queryString + '&table=<?=$_REQUEST['table']?>';
+        queryString = queryString + '&table=<?=$_REQUEST['table']?>';
         window.location.search = queryString;
     });
 });

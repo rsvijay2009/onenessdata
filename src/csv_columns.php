@@ -37,7 +37,7 @@ include_once "sidebar.php"
             <table class="table table-bordered">
             <thead>
                 <tr style="background:#E9EDF0"> 
-                    <th><input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">Column Name</th>
+                    <th><input type="checkbox" class="highlightCheck" id="selectAll" onclick="toggleCheckboxes(this)">Column Name</th>
                     <th>Datatype</th>
                 </tr>
             </thead>
@@ -58,7 +58,7 @@ include_once "sidebar.php"
                             }
                             foreach ($data as $index => $column) {
                                 echo "<tr>
-                                        <td style='padding:5px;'><input type='checkbox' id='{$column}' name='columns[]' value='{$column}'>
+                                        <td style='padding:5px;'><input class='highlightCheck' type='checkbox' id='{$column}' name='columns[]' value='{$column}'>
                                         <label for='{$column}'>" .
                                             htmlspecialchars($column) ."
                                         </td>

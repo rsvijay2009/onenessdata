@@ -7,3 +7,6 @@ table tr td input[type="checkbox"] {
 .form-select {
     width: 60%; 
 }
+.highlighted {
+    background-color: #d4edda;
+}

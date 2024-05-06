@@ -30,12 +30,13 @@
 }
 .gradient-sticky-bar {
     flex-direction:column;
-    height: 15px;
-    margin: 10px 0;
+    height: 10px;
+    margin: 12px 0;
     background: linear-gradient(to right, green var(--percentage) , red 0%);
     margin-bottom:-6px;
     color:white;
     font-size:12px;
+    border-radius: 3px;;
 }
 .sticky-bar-1 {
     flex-direction:column;

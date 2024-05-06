@@ -4,43 +4,9 @@ Merge task
  - There is no gurantee that user will upload files with same number of columns(One file may contain 10 columns and another one may be 5)
  - After do the MySql union the data is clumsy because of diffrent datatype and data
 
-
-DELIMITER $$
-
-CREATE PROCEDURE GetDashboardData()
-BEGIN
-    DECLARE data_quality_correct_data INT DEFAULT 10;
-    DECLARE data_quality_incorrect_data INT DEFAULT 0;
-    DECLARE money_issue INT DEFAULT 5;
-    DECLARE alphanumeric_issue INT DEFAULT 0;
-    DECLARE string_issue INT DEFAULT 2;
-    DECLARE number_issue INT DEFAULT 0;
-    DECLARE duplicate_entries_issue INT DEFAULT 8;
-    DECLARE date_issue INT DEFAULT 0;
-    DECLARE email_issue INT DEFAULT 1;
-    DECLARE overall_correct_data INT DEFAULT 50;
-	DECLARE overall_incorrect_data INT DEFAULT 50;
-    SELECT data_quality_correct_data AS 'data_quality_correct_data', 
-    data_quality_incorrect_data AS 'data_quality_incorrect_data',
-    money_issue AS 'money_issue',
-    alphanumeric_issue AS 'alphanumeric_issue',
-    string_issue AS 'string_issue',
-    number_issue AS 'number_issue',
-    duplicate_entries_issue AS 'duplicate_entries_issue',
-    date_issue AS 'date_issue',
-    email_issue AS 'data_quality_correct_data',
-    overall_correct_data AS 'overall_correct_data',
-    overall_incorrect_data AS 'overall_incorrect_data';
-    
-END$$
-
-DELIMITER ;
-
-
-
-
-
- CREATE TABLE projects (
+Tables tables_list
+-------------------
+CREATE TABLE projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
@@ -97,6 +63,43 @@ CREATE TABLE temp_table_ids (
 );
 
 
+
+Stored procedure tables_list
+----------------------------
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GetDashboardData()
+BEGIN
+    DECLARE data_quality_correct_data INT DEFAULT 10;
+    DECLARE data_quality_incorrect_data INT DEFAULT 0;
+    DECLARE money_issue INT DEFAULT 5;
+    DECLARE alphanumeric_issue INT DEFAULT 0;
+    DECLARE string_issue INT DEFAULT 2;
+    DECLARE number_issue INT DEFAULT 0;
+    DECLARE duplicate_entries_issue INT DEFAULT 8;
+    DECLARE date_issue INT DEFAULT 0;
+    DECLARE email_issue INT DEFAULT 1;
+    DECLARE overall_correct_data INT DEFAULT 50;
+	DECLARE overall_incorrect_data INT DEFAULT 50;
+    SELECT data_quality_correct_data AS 'data_quality_correct_data', 
+    data_quality_incorrect_data AS 'data_quality_incorrect_data',
+    money_issue AS 'money_issue',
+    alphanumeric_issue AS 'alphanumeric_issue',
+    string_issue AS 'string_issue',
+    number_issue AS 'number_issue',
+    duplicate_entries_issue AS 'duplicate_entries_issue',
+    date_issue AS 'date_issue',
+    email_issue AS 'data_quality_correct_data',
+    overall_correct_data AS 'overall_correct_data',
+    overall_incorrect_data AS 'overall_incorrect_data';
+    
+END$$
+
+DELIMITER ;
+
+
 DELIMITER $$
 
 CREATE PROCEDURE DeleteProjectData(IN projectId INT)
@@ -147,8 +150,6 @@ BEGIN
 END$$
 
 DELIMITER ;
-
-
 
 
 DELIMITER $$

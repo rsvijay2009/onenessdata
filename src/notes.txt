@@ -92,6 +92,93 @@ CREATE TABLE table_datatypes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE temp_table_ids (
+    table_id INT
+);
+
+
+DELIMITER $$
+
+CREATE PROCEDURE DeleteProjectData(IN projectId INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE _tableName VARCHAR(255);
+    DECLARE _tableId INT;
+    DECLARE cur CURSOR FOR SELECT id, name FROM tables_list WHERE project_id = projectId;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    -- Cursor to fetch table names and IDs
+    OPEN cur;
+    
+    read_loop: LOOP
+        FETCH cur INTO _tableId, _tableName;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Check if table name is not null or empty
+        IF _tableName IS NOT NULL AND _tableName <> '' THEN
+            -- Dynamically drop table if it exists
+            SET @s = CONCAT('DROP TABLE IF EXISTS ', _tableName);
+            PREPARE stmt FROM @s;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+            
+            -- Collect table IDs for later use
+            INSERT INTO temp_table_ids VALUES (_tableId);
+        END IF;
+    END LOOP;
+    
+    CLOSE cur;
+    
+    -- Delete from tables_list where project_id matches
+    DELETE FROM tables_list WHERE project_id = projectId;
+    
+    -- Check if there are table IDs collected, then delete from table_datatypes
+    IF (SELECT COUNT(*) FROM temp_table_ids) > 0 THEN
+        DELETE FROM table_datatypes WHERE table_id IN (SELECT table_id FROM temp_table_ids);
+    END IF;
+    
+    -- Delete from projects where id matches
+    DELETE FROM projects WHERE id = projectId;
+    
+    -- Optionally, clean up temporary storage for IDs
+    TRUNCATE TABLE temp_table_ids;
+END$$
+
+DELIMITER ;
+
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE DropAndCleanUpTable(IN tableId INT)
+BEGIN
+    DECLARE _tableName VARCHAR(255);
+    
+    -- Select the table name from tables_list
+    SELECT name INTO _tableName FROM tables_list WHERE id = tableId LIMIT 1;
+    
+    -- Check if the table name is not empty and drop the table if it exists
+    IF _tableName IS NOT NULL AND _tableName <> '' THEN
+        SET @dropQuery = CONCAT('DROP TABLE IF EXISTS ', _tableName);
+        PREPARE stmt FROM @dropQuery;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+    
+    -- Delete the entry from tables_list
+    DELETE FROM tables_list WHERE id = tableId;
+    
+    -- Delete related data from table_datatypes
+    DELETE FROM table_datatypes WHERE table_id = tableId;
+END$$
+
+DELIMITER ;
+
+
+
 
 
 1. side bar design change

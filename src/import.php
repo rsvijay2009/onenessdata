@@ -33,11 +33,18 @@ if (($handle = fopen($csvFile, "r")) !== false) {
 
     // Create table dynamically
     try {
+        // Prepend the primary key definition to the array
+        $columnDefinitions = array_unshift($selectedColumns, "`primary_key` INT AUTO_INCREMENT PRIMARY KEY");
         $columnDefinitions = array_map(function ($string) {
-            $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
-            $col = strtolower($stringWithoutSpace);
-            return "`$col` TEXT";
+            if (strpos($string, 'PRIMARY KEY') !== false) {
+                return $string;
+            } else {
+                $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
+                $col = strtolower($stringWithoutSpace);
+                return "`$col` TEXT";
+            }
         }, $selectedColumns);
+
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
         $isTableCreated = true;
@@ -55,6 +62,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $stmt->execute();
         $tableId = $pdo->lastInsertId();
 
+        unset($selectedColumns[0]);
         $insertColumns = implode(", ", array_map(function ($string) {
             $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
             $col = strtolower($stringWithoutSpace);

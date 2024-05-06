@@ -3,8 +3,23 @@
 function deleteAllProjectRelatedData($projectId = 0, $pdo)
 {
     if($projectId) {
-        try
-        {
+        //Call the stored procedure to delete all the project related data
+        try {
+            $stmt = $pdo->prepare("CALL DeleteProjectData(:projectId)");
+            $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $notificationClassName = 'notification-success-banner';
+            $userNotificationMsg = "Project deleted successfully";
+        } catch (PDOException $e) {
+            $notificationClassName = 'notification-error-banner';
+            $userNotificationMsg =  "No project found with the ID: $projectId";
+        }
+        return [
+            'notificationClassName' => $notificationClassName ?? '',
+            'userNotificationMsg' => $userNotificationMsg ?? ''
+        ];
+        /*try {
             //Find the tables list and delete them
             $selectTablesList = $pdo->prepare("SELECT id, name FROM tables_list  WHERE project_id = $projectId");
             $selectTablesList->execute();
@@ -56,14 +71,30 @@ function deleteAllProjectRelatedData($projectId = 0, $pdo)
             ];
         } catch (Exception  $e) {
             die("Could not delete record: " . $e);
-        }
+        }*/
     }
 }
 
 function deleteAllTableRelatedData($tableId = 0, PDO $pdo)
 {
     if($tableId) {
-        try
+        //Call the stored procedure to delete all the table related data
+        try {
+            $stmt = $pdo->prepare("CALL DropAndCleanUpTable(:tableId)");
+            $stmt->bindParam(':tableId', $tableId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $notificationClassName = 'notification-success-banner';
+            $userNotificationMsg = "Table deleted successfully";
+        } catch (PDOException $e) {
+            $notificationClassName = 'notification-error-banner';
+            $userNotificationMsg =  "No table found with the ID: $tableId";
+        }
+        return [
+            'notificationClassName' => $notificationClassName ?? '',
+            'userNotificationMsg' => $userNotificationMsg ?? ''
+        ];
+        /*try
         {
             $stmt = $pdo->prepare("SELECT id, name FROM tables_list  WHERE id = $tableId");
             $stmt->execute();
@@ -102,7 +133,7 @@ function deleteAllTableRelatedData($tableId = 0, PDO $pdo)
             ];
         } catch (Exception  $e) {
             die("Could not delete record: " . $e);
-        }
+        }*/
     }
 }
 

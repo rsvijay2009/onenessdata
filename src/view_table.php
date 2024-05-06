@@ -33,15 +33,16 @@ if (empty($tableName)) {
         $columns = [];
         for ($i = 0; $i < $columnCount; $i++) {
             $col = $stmt->getColumnMeta($i);
-            if($col['name'] != 'table_id') {
+            if($col['name'] !== 'primary_key' && trim($col['name']) != 'table_id') {
                 $columns[] = $col['name'];
             }
         }
-    
+
         // Fetch data with limit and offset
-        $dataQuery = $pdo->prepare("SELECT * FROM $tableName LIMIT :perPage OFFSET :offset");
-        $dataQuery->bindParam(':perPage', $perPage, PDO::PARAM_INT);
-        $dataQuery->bindParam(':offset', $offset, PDO::PARAM_INT);
+        // $dataQuery = $pdo->prepare("SELECT * FROM $tableName LIMIT :perPage OFFSET :offset");
+        // $dataQuery->bindParam(':perPage', $perPage, PDO::PARAM_INT);
+        // $dataQuery->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $dataQuery = $pdo->prepare("SELECT * FROM $tableName");
         $dataQuery->execute();
         $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
     
@@ -82,7 +83,7 @@ include_once "header.php";
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                    <nav aria-label="Page navigation example">
+                    <!-- <nav aria-label="Page navigation example">
                         <ul class="pagination">
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i === $page ? 'active' : '' ?>">
@@ -90,7 +91,7 @@ include_once "header.php";
                                 </li>
                             <?php endfor; ?>
                         </ul>
-                    </nav>
+                    </nav> -->
                 </div>
              </div>
         </div>

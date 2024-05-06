@@ -5,10 +5,8 @@ include_once "sidebar.php";
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$isTableAvailable = false;
 $tableName = $_REQUEST["table_name"] ?? "";
 if (!empty($tableName)) {
-    $isTableAvailable = true;
     try {
         $stmt = $pdo->prepare("SELECT column_name, data_quality, uniqueness  FROM table_datatypes WHERE table_name = '".$tableName."'");
         $stmt->execute();
@@ -29,7 +27,7 @@ include_once "header.php";
 <link rel="stylesheet" href="styles/dashboard.css">
 </head>
 <body>
-<?php if (!$isTableAvailable || count($columns) == 0) {
+<?php if (count($columns) == 0) {
     include "not_found_msg.php";
 } else {?>
 <div class="container-fluid">
@@ -97,7 +95,7 @@ include_once "header.php";
                         <tbody>
                         <?php foreach ($columns as $column) { ?>
                                     <tr>
-                                    <td><a href="table_data.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" class="table-name-link"><?= $column["column_name"]?></a></td>
+                                    <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" class="table-name-link"><?= $column["column_name"]?></a></td>
                                     <td>
                                         <div class="sticky-bar-container">
                                             <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column["data_quality"]?>%;"></div>

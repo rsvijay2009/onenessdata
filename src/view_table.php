@@ -7,15 +7,15 @@ $columnName = $_REQUEST['column'] ?? null;
 $selectedColumns = [];
 $data = [];
 
-if (empty($tableName)) {
-    $isTableAvailable = false;
-} else {
-    try {
-        $isTableAvailable = true;
-       // PDO connection setup
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+try {
+    // PDO connection setup
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+    $stmt->execute([$tableName]);
+
+    if ($stmt->fetch()) {
         $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id')");
         $columnQuery->execute();
         $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
@@ -40,15 +40,18 @@ if (empty($tableName)) {
             $dataQuery->execute();
             $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
         }
-    } catch (PDOException $e) {
-        die("Could not connect to the database $dbname :" . $e->getMessage());
+    } else {
+        $data = [];
     }
+} catch (PDOException $e) {
+    die("Could not connect to the database $dbname :" . $e->getMessage());
 }
+
 include_once "header.php";
 ?>
 </head>
 <body>
-<?php if (!$isTableAvailable || count($columns) == 0) {
+<?php if (count($data) == 0) {
     include "not_found_msg.php";
 } else {?>
 <div class="container-fluid">

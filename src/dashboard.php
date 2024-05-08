@@ -80,7 +80,7 @@ include_once "header.php";
                     </div>
                 </div>
             </div>
-            <a href="view_table.php?table_name=<?=$tableName?>"><input type="button" value="View Table" class="view-table" style="padding:5px; margin-left:10px;"></a>
+            <!-- <a href="view_table.php?table=<?=$tableName?>"><input type="button" value="View Table" class="view-table" style="padding:5px; margin-left:10px;"></a> -->
             <!-- Table Below Cards -->
             <div style="padding:10px;">
                 <div class="table-responsive">
@@ -104,8 +104,7 @@ include_once "header.php";
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column["uniqueness"]?>%;"></div>
-                                            <div class="sticky-bar-1" style="background-color: green; width: 10%; border-radius:3px;font-size:10px;text-align:center;"><?= $column["uniqueness"]?>%</div>
+                                            <div class="gradient-sticky-bar2" style="background-color: #C17CAB; width: 80%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div>
                                             <!-- <div class="sticky-bar-1" style="background-color: #71B6FA; width: 50%; border-radius:3px;font-size:10px; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div> -->
                                             <div class="sticky-bar-1" style="background-color: #5C6ABD; width: 50%; border-radius:3px;font-size:10px;text-align:center;">Completeness - 97%</div>
                                         </div>

@@ -6,6 +6,7 @@ $tableName = $_REQUEST['table'] ?? null;
 $columnName = $_REQUEST['column'] ?? null;
 $selectedColumns = [];
 $data = [];
+$columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
 
 try {
     // PDO connection setup
@@ -34,9 +35,12 @@ try {
             $selectedColumns[] = 'primary_key';
             // Fetch data for selected columns
             if(!empty($selectedColumns)) {
-                $queryColumns = implode(', ', array_map(function($col) { return "`$col`"; }, $selectedColumns));
+                $queryColumns = implode(', ', array_map(function($col) use($tableName) { return "`$tableName`.`$col`"; }, $selectedColumns));
             }
-            $dataQuery = $pdo->prepare("SELECT $queryColumns FROM `$tableName`");
+            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
+            ON `$tableName`.primary_key =  data_verification.`master_primary_key`";
+
+            $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
             $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
         }
@@ -50,6 +54,11 @@ try {
 include_once "header.php";
 ?>
 </head>
+<style>
+.highlight-text {
+    color:red;
+}
+</style>
 <body>
 <?php if (count($data) == 0) {
     include "not_found_msg.php";
@@ -103,7 +112,11 @@ include_once "header.php";
                                     <?php foreach ($selectedColumns as $col): ?>
                                         <?php if($col != 'primary_key') {?>
                                             <td>
-                                                <span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                                <?php if($col == $columnToHighlight) {?>
+                                                    <span class="non-editable highlight-text"><?= htmlspecialchars($row[$col]) ?></span>
+                                                <?php } else {?>
+                                                    <span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                                <?php } ?>
                                                 <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
                                                 <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col) ?>" style="display: none;">
                                                 <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key']) ?>" style="display: none;">
@@ -171,19 +184,28 @@ $(document).ready(function() {
         $('.column-checkbox:checked').each(function() {
             selectedColumns.push($(this).val());
         });
-
-        var queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
+         //Rearrange the array to put the selected column in first position
+        const selectedColumnName = '<?=$columnToHighlight?>';
+        const selectedColumnIndex = selectedColumns.indexOf(selectedColumnName);
+        selectedColumns.splice(selectedColumnIndex, 1);
+        selectedColumns.unshift(selectedColumnName);
+        let queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
         queryString = queryString + '&table=<?=$_REQUEST['table']?>';
 
         window.location.search = queryString;
     });
     $('.column-checkbox').on('change', function(e) {
         e.preventDefault();
-        var selectedColumns = [];
+        const selectedColumns = [];
         $('.column-checkbox:checked').each(function() {
             selectedColumns.push($(this).val());
         });
-        var queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
+        //Rearrange the array to put the selected column in first position
+        const selectedColumnName = '<?=$columnToHighlight?>';
+        const selectedColumnIndex = selectedColumns.indexOf(selectedColumnName);
+        selectedColumns.splice(selectedColumnIndex, 1);
+        selectedColumns.unshift(selectedColumnName);
+        let queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
         queryString = queryString + '&table=<?=$_REQUEST['table']?>';
         window.location.search = queryString;
     });

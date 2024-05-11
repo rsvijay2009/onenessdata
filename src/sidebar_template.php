@@ -1,12 +1,16 @@
+<?php
+$currentFileName = basename($_SERVER['PHP_SELF']);
+$sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2';
+?>
 <link rel="stylesheet" href="styles/sidebar.css">
 <input type="hidden" id="notification-content" value="<?=$userNotificationMsg?>">
 
 <div id="notification" class="<?=$notificationClassName?>">
     <!-- Message will be inserted here dynamically -->
 </div>
-<div class="col-md-2 bg-light">
+<div class="<?=$sideBarWithDesign?> bg-light">
     <div class="d-flex flex-column flex-shrink-0 p-3" style="height: 100vh;">
-    <h5 style="margin:;" class="logo-data">Onness Data</h5>
+    <h5 class="logo-data">Onness Data</h5>
             <div class="menu-item">
                 <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>" style="color:#71B6FA; padding-left:13px;">Upload</a>
                 </h6>
@@ -19,7 +23,7 @@
                     <span class="d-flex justify-content-between align-items-center">
                         <a class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" href="#<?= $project["name"
                         ] ?>" role="button" aria-expanded="false" style="color:#71B6FA; text-wrap:wrap;">
-                        <?= ucfirst($project["name"] )?> <span class="badge" style="font-weight:bold;font-size:20px;color:black; padding-left:100px;">+</span></a>
+                        <?= ucfirst($project["name"] )?> <span class="badge" style="font-weight:bold;font-size:20px;color:black;">+</span></a>
                     </span>
                     <?php
                     $sql ="SELECT id, name FROM tables_list where  project_id = :projectId";
@@ -31,7 +35,7 @@
                     <div class="menu collapse" id="<?= $project["name"] ?>">
                         <?php foreach ($tables as $table) { ?>
                             <ul class="nav flex-column p-1">
-                                    <li class="nav-item">
+                                    <li class="nav-item"  draggable="true" ondragstart="drag(event)">
                                         <a href="dashboard.php?table_name=<?=$table["name"]?>" style="text-decoration:none; color:black;padding-left:15px;" role="button"><?= ucfirst(
                                             $table["name"]
                                         ) ?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
@@ -42,13 +46,20 @@
                     </div>
                 </div>
                 <div class="collapse" id="<?= $project["name"] ?>">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link project-delete" onclick="confirmProjectDeletion(<?= $project['id'] ?>, '<?= $project['name'] ?>')"> Delete project</a>
-                            </li>
-                        </ul>
-                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link project-delete" onclick="confirmProjectDeletion(<?= $project['id'] ?>, '<?= $project['name'] ?>')"> Delete project</a>
+                        </li>
+                    </ul>
+                </div>
             <?php } ?>
+                <div class="">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" style="color:#71B6FA" href="merge.php">Merge</a>
+                        </li>
+                    </ul>
+                </div>
         </form>
     </div>
 </div>

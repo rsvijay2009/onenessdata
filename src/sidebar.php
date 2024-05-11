@@ -9,10 +9,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     include_once("utilities/common_utils.php");
     $projectId = $_POST['deleteProjectId'] ?? 0;
     $tableId = $_POST['deleteTableId'] ?? 0;
-    // echo '<pre>';
-    // echo "Project id:$projectId";
-    // echo "Table id:$tableId";
-    // exit;
 
     if($projectId > 0) {
         $response = deleteAllProjectRelatedData($projectId, $pdo);

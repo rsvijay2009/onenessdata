@@ -25,6 +25,7 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
         if (count(array_unique($columnCountArr)) === 1) {
             $unionSQL = "";
             $newTableName = "";
+            $tableNameList = [];
             foreach ($selectedTablesArr as $index => $tableName) {
                 $tableName = trim($tableName);
                 if ($index > 0) {
@@ -32,12 +33,31 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                 }
                 $newTableName .= $tableName . "_";
                 $unionSQL .= "SELECT * FROM $tableName";
+                $tableNameList[] =  $tableName;
             }
 
             try {
                 $newTableName = $newTableName.time();
                 $newTableName = (strlen($newTableName) > 64) ? substr($newTableName, 0, 64) : $newTableName;
                 $pdo->exec("CREATE TABLE `$newTableName` AS $unionSQL");
+
+                //Insert a new row for mergerd table in tables_list table
+                // $firstTableName = $tableNameList[0] ?? null;
+                // if($firstTableName) {
+                //     $stmt = $pdo->prepare("SELECT project_id FROM tables_list WHERE name = '$firstTableName' LIMIT 1");
+                //     $stmt->execute();
+                //     $project = $stmt->fetch(PDO::FETCH_ASSOC);
+                //     $projectId = $project['project_id'] ?? null;
+
+                //     if($projectId) {
+                //         $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id) VALUES ('$newTableName', $projectId)");
+                //         $stmt->execute();
+                //         $mergedtableId = $pdo->lastInsertId();
+
+                //         $stmt = $pdo->prepare("UPDATE $newTableName SET table_id =  $mergedtableId");
+                //         $stmt->execute();
+                //     }
+                // }
                 $successMsg = "Data merged successfully!!";
             } catch (PDOException $e) {
                 die("Error fetching tables: " . $e->getMessage());

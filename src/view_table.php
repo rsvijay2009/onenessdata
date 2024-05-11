@@ -37,8 +37,9 @@ try {
             if(!empty($selectedColumns)) {
                 $queryColumns = implode(', ', array_map(function($col) use($tableName) { return "`$tableName`.`$col`"; }, $selectedColumns));
             }
+            $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
             $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
-            ON `$tableName`.primary_key =  data_verification.`master_primary_key`";
+            ON `$tableName`.primary_key =  data_verification.`master_primary_key` WHERE data_verification.table_name = '$tableName' AND column_name = '$columnName' AND ingore_flag = 0";
 
             $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
@@ -60,15 +61,13 @@ include_once "header.php";
 }
 </style>
 <body>
-<?php if (count($data) == 0) {
-    include "not_found_msg.php";
-} else {?>
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
         <div class="col-md-10">
             <div style="padding:10px;">
+            <?php if(!empty($selectedColumns) && !empty($data)) { ?>
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>
                 <div class="dropdown" style="display: flex; justify-content: flex-end;">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
@@ -94,7 +93,6 @@ include_once "header.php";
                     </ul>
                 </div>
                 <div class="">
-                <?php if(!empty($selectedColumns) && !empty($data)) { ?>
                     <table class="table">
                         <thead>
                             <tr>
@@ -132,15 +130,14 @@ include_once "header.php";
                         </tbody>
                     </table>
                     <?php } else {?>
-                        <div style="margin-top:-30px; text-align:center; color:red;">Please select atleast one column to show data</div>
+                        <div style="text-align:center; color:red; font-size:20px;">No incorrect data found for the <?=$columnToHighlight?>
+                    column </div>
                     <?php } ?>
                 </div>
              </div>
         </div>
     </div>
 </div>
-<?php
-} ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {

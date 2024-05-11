@@ -5,9 +5,6 @@ Merge task
  - After do the MySql union the data is clumsy because of diffrent datatype and data
 
 
-
-
-
 1. side bar design change
 
 2. To have delete icon for each table and as well as for project
@@ -34,7 +31,3 @@ Change in data quality design
 uniqueness text in the middle of the sticky bar
 use different color
 uniqueness as a single sticky bar like completeness
-
-Create a new table with id, column_name, table_name, primary key of master table against that column ignoreFlag, 
-
-              9               email       customers             5                                    0

@@ -79,32 +79,32 @@ CREATE TABLE temp_table_ids (
 ```sql
 DELIMITER $$
 
-CREATE PROCEDURE GetDashboardData()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetDashboardData`()
 BEGIN
-    DECLARE data_quality_correct_data INT DEFAULT 10;
-    DECLARE data_quality_incorrect_data INT DEFAULT 0;
-    DECLARE money_issue INT DEFAULT 5;
-    DECLARE alphanumeric_issue INT DEFAULT 0;
-    DECLARE string_issue INT DEFAULT 2;
-    DECLARE number_issue INT DEFAULT 0;
-    DECLARE duplicate_entries_issue INT DEFAULT 8;
-    DECLARE date_issue INT DEFAULT 0;
-    DECLARE email_issue INT DEFAULT 1;
-    DECLARE overall_correct_data INT DEFAULT 50;
-	DECLARE overall_incorrect_data INT DEFAULT 50;
+    DECLARE data_quality_correct_data INT DEFAULT 70;
+    DECLARE data_quality_incorrect_data INT DEFAULT 30;
+    DECLARE text_issue INT DEFAULT 10;
+    DECLARE number_issue INT DEFAULT 20;
+    DECLARE date_issue INT DEFAULT 30;
+    DECLARE alphanumeric_issue INT DEFAULT 40;
+    DECLARE email_issue INT DEFAULT 50;
+    DECLARE duplicate_entries_issue INT DEFAULT 60;
+    DECLARE others_issue INT DEFAULT 70;
+    DECLARE overall_correct_data INT DEFAULT 10;
+	DECLARE overall_incorrect_data INT DEFAULT 90;
     SELECT data_quality_correct_data AS 'data_quality_correct_data', 
     data_quality_incorrect_data AS 'data_quality_incorrect_data',
-    money_issue AS 'money_issue',
-    alphanumeric_issue AS 'alphanumeric_issue',
-    string_issue AS 'string_issue',
+    text_issue AS 'text_issue',
     number_issue AS 'number_issue',
-    duplicate_entries_issue AS 'duplicate_entries_issue',
     date_issue AS 'date_issue',
-    email_issue AS 'data_quality_correct_data',
+    alphanumeric_issue AS 'alphanumeric_issue',
+    email_issue AS 'email_issue',
+    duplicate_entries_issue AS 'duplicate_entries_issue',
+    others_issue AS 'others_issue',
     overall_correct_data AS 'overall_correct_data',
     overall_incorrect_data AS 'overall_incorrect_data';
     
-END$$
+END $$
 
 DELIMITER ;
 ```

@@ -49,25 +49,18 @@ include_once "header.php";
                     <div class="card">
                     <h5 class="card-title">Issues</h5>
                     <div class="card-body">
-                            <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">Money - <?= $spDashboardData["money_issue"] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #5C6ABD; width: 70%;">Alphanumeric - <?= $spDashboardData[
-                                "alphanumeric_issue"
-                            ] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">String - <?= $spDashboardData[
-                                "string_issue"
-                            ] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #5C6ABD; width: 70%;">Number - <?= $spDashboardData[
-                                "number_issue"
-                            ] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">Duplicate entries - <?= $spDashboardData[
-                                "duplicate_entries_issue"
-                            ] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #5C6ABD; width: 70%;">Date - <?= $spDashboardData[
-                                "date_issue"
-                            ] ?? 0 ?></div>
-                            <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">Email - <?= $spDashboardData[
-                                "email_issue"
-                            ] ?? 0 ?></div>
+                            <?php
+                             $stmt = $pdo->prepare("SELECT name from datatypes WHERE status = 'ACTIVE'");
+                             $stmt->execute();
+                             $datatypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                             foreach ($datatypes as $key => $datatype) {
+                                $backGroundColor = ($key % 2 == 0) ? '#71B6FA' : '#5C6ABD';
+                                $storedProcedureVaraibleName = strtolower($datatype['name']).'_issue';
+                              ?>
+                               <div class="sticky-bar" style="background-color: <?=$backGroundColor?>; width: 70%;"><?=$datatype['name']?> -  <?= $spDashboardData[$storedProcedureVaraibleName] ?? 0 ?></div>
+                                <?php } ?>
+                                <div class="sticky-bar" style="background-color: #5C6ABD; width: 70%;">Duplicate entries - <?= $spDashboardData["duplicate_entries_issue"] ?? 0 ?></div>
+                                <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">Others - <?= $spDashboardData["others_issue"] ?? 0 ?></div>
                         </div>
                     </div>
                 </div>

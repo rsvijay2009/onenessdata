@@ -203,9 +203,14 @@ CREATE TABLE data_verification (
     table_name VARCHAR(255) NOT NULL,
     column_name  VARCHAR(255) NOT NULL,
     master_primary_key INT NOT NULL,
-    ingore_flag INT NOT NULL DEFAULT 0,
+    ignore_flag INT NOT NULL DEFAULT 0,
     status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+```
+
+```sql
+ALTER TABLE data_verification
+CHANGE COLUMN ingore_flag ignore_flag  int NOT NULL DEFAULT '0';
 ```

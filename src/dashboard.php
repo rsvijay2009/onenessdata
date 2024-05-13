@@ -50,17 +50,19 @@ include_once "header.php";
                     <h5 class="card-title">Issues</h5>
                     <div class="card-body">
                             <?php
-                             $stmt = $pdo->prepare("SELECT name from datatypes WHERE status = 'ACTIVE'");
-                             $stmt->execute();
-                             $datatypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                             foreach ($datatypes as $key => $datatype) {
+                            $stmt = $pdo->prepare("SELECT name from datatypes WHERE status = 'ACTIVE'");
+                            $stmt->execute();
+                            $datatypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            foreach ($datatypes as $key => $datatype) {
                                 $backGroundColor = ($key % 2 == 0) ? '#71B6FA' : '#5C6ABD';
                                 $storedProcedureVaraibleName = strtolower($datatype['name']).'_issue';
-                              ?>
-                               <div class="sticky-bar" style="background-color: <?=$backGroundColor?>; width: 70%;"><?=$datatype['name']?> -  <?= $spDashboardData[$storedProcedureVaraibleName] ?? 0 ?></div>
-                                <?php } ?>
-                                <div class="sticky-bar" style="background-color: #5C6ABD; width: 70%;">Duplicate entries - <?= $spDashboardData["duplicate_entries_issue"] ?? 0 ?></div>
-                                <div class="sticky-bar" style="background-color: #71B6FA; width: 70%;">Others - <?= $spDashboardData["others_issue"] ?? 0 ?></div>
+                            ?>
+                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: <?=$backGroundColor?>; width: 100%;"><?=$datatype['name']?> -  <?= $spDashboardData[$storedProcedureVaraibleName] ?? 0 ?></div></a>
+                            <?php } ?>
+                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #5C6ABD; width: 100%;">Duplicate entries - <?= $spDashboardData["duplicate_entries_issue"] ?? 0 ?></div>
+                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #71B6FA; width: 100%;">Others - <?= $spDashboardData["others_issue"] ?? 0 ?></div></a>
+                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #5C6ABD; width: 100%;">NULL - <?= $spDashboardData["null_issue"] ?? 0 ?></div></a>
                         </div>
                     </div>
                 </div>

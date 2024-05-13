@@ -8,6 +8,13 @@ $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
 
+if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
+    $issueId = $_POST['issueId'];
+    $query = "UPDATE data_verification SET ignore_flag = 1 WHERE id = $issueId";
+    $updateQuery = $pdo->prepare($query);
+    $updateQuery->execute();
+}
+
 try {
     // PDO connection setup
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -37,6 +44,7 @@ try {
             if(!empty($selectedColumns)) {
                 $queryColumns = implode(', ', array_map(function($col) use($tableName) { return "`$tableName`.`$col`"; }, $selectedColumns));
             }
+            $queryColumns = $queryColumns.', `data_verification`.`id` as dvId';
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
             $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
             ON `$tableName`.primary_key =  data_verification.`master_primary_key` WHERE data_verification.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
@@ -104,7 +112,7 @@ include_once "header.php";
                                 <tr>
                                     <?php foreach ($selectedColumns as $col): ?>
                                         <?php if($col != 'primary_key') {?>
-                                            <td>
+                                            <td style="max-width:100%">
                                                 <?php if($col == $columnToHighlight) {?>
                                                     <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col]) ?></span>
                                                 <?php } else {?>
@@ -116,9 +124,13 @@ include_once "header.php";
                                             </td>
                                         <?php } ?>
                                     <?php endforeach; ?>
-                                    <td>
+                                    <td style="max-width:5%">
                                         <button class="btn btn-primary edit-btn">Edit</button>
                                         <button class="btn btn-success save-btn" style="display: none;">Save</button>
+                                        <form name="ignoreIssueForm" method="post" style="display:inline-block;">
+                                            <input type="hidden" name="issueId" id="issueId" value="">
+                                            <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId']) ?>');">Ignore</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -202,6 +214,18 @@ $(document).ready(function() {
         window.location.search = queryString;
     });
 });
+
+function ignoreIssue(issueId) {
+    let result = confirm("Are you sure to ignore this issue?");
+
+    if (result) {
+        document.getElementById('issueId').value= issueId;
+        document.forms["ignoreIssueForm"].submit();
+    } else {
+        event.preventDefault();
+        return false;
+    }
+}
 </script>
 </body>
 </html>

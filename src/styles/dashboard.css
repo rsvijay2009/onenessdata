@@ -50,8 +50,8 @@
 }
 .sticky-bar-1 {
     flex-direction:column;
-    height: 15px;
-    margin: 10px 0;
+    height: 14px;
+    margin: 11px 0;
     background-color: #ccc;
     margin-bottom:-6px;
     color:white;

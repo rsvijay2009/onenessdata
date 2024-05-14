@@ -156,6 +156,9 @@ BEGIN
     
     -- Delete from projects where id matches
     DELETE FROM projects WHERE id = projectId;
+
+    -- Delete related data from data_verification table
+    DELETE FROM data_verification WHERE project_id = projectId;
     
     -- Optionally, clean up temporary storage for IDs
     TRUNCATE TABLE temp_table_ids;
@@ -189,6 +192,9 @@ BEGIN
     
     -- Delete related data from table_datatypes
     DELETE FROM table_datatypes WHERE table_id = tableId;
+
+    -- Delete related data from data_verification table
+    DELETE FROM data_verification WHERE table_id = tableId;
 END$$
 
 DELIMITER ;
@@ -199,6 +205,7 @@ DELIMITER ;
 ```sql
 CREATE TABLE data_verification (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
     table_id INT NOT NULL,
     table_name VARCHAR(255) NOT NULL,
     column_name  VARCHAR(255) NOT NULL,

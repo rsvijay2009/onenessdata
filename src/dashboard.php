@@ -99,7 +99,7 @@ include_once "header.php";
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar2" style="background-color: #C17CAB; width: 80%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div>
+                                            <div class="gradient-sticky-bar2" style="background-color: #C17CAB; width: 50%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div>
                                             <!-- <div class="sticky-bar-1" style="background-color: #71B6FA; width: 50%; border-radius:3px;font-size:10px; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div> -->
                                             <div class="sticky-bar-1" style="background-color: #5C6ABD; width: 50%; border-radius:3px;font-size:10px;text-align:center;">Completeness - 97%</div>
                                         </div>

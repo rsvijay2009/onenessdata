@@ -58,7 +58,7 @@ input[type="submit"]:hover {
     cursor: pointer;
     text-decoration: none;
     color:red;
-    max-width: 140px;
+    max-width: 145px;
     max-height: 38px;
     font-weight: bold;
     border-radius: 10px;

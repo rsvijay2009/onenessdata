@@ -31,3 +31,29 @@ Change in data quality design
 uniqueness text in the middle of the sticky bar
 use different color
 uniqueness as a single sticky bar like completeness
+
+
+1. Home page landing by clicking the logo - done
+
+2. Upload needs to remap, it's not pointed to the landing page - done
+
+3. The email_id column has issues - not able to import the table when selecting this column. This may be because of the _  in the column name. So check if the column name has anything other than string and replace all characters with _ and create a table. 
+
+
+4. Remove the % symbol on the total record diagram - it is a count so no need for a % symbol. - Done
+
+4.1 Change the total record graph to a bar chart and display the number - Done
+
+5. Design a page like the attached(File1)- link this page when clicking the red(incorrect data part) of the dashboard page, similarly link the good data and display when clicking the good data part
+
+
+5.1  Mark these issues and download as csv, excel / sql,etc..
+
+
+6. See attached File2, The table is showing 2 times in our application- but in the database, it is only one table. I think it is due to using the back button but I am not sure. Please check - Done
+
+7. Merge not working- landing at a blank page, no merge table created
+
+8. Dim issues when the issue count is 0 and remove the hyperlink - Done
+
+9. Create view stats for each column. Create top 5 values and bottom 5 values when uniqueness is not 100%- see my diagram attached for reference.

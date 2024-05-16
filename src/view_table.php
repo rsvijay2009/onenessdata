@@ -31,7 +31,7 @@ try {
                 $selectedColumns = $_REQUEST['column'];
             }
 
-            $selectedColumns = array_intersect($selectedColumns, $columns);  // Ensure only valid columns are processed
+            $selectedColumns = array_intersect($selectedColumns, $columns);
             $selectedColumns[] = 'primary_key';
             // Fetch data for selected columns
             if(!empty($selectedColumns)) {
@@ -40,7 +40,6 @@ try {
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
             $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
             ON `$tableName`.primary_key =  data_verification.`master_primary_key` WHERE data_verification.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
-
             $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
             $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -51,7 +50,6 @@ try {
 } catch (PDOException $e) {
     die("Could not connect to the database $dbname :" . $e->getMessage());
 }
-
 include_once "header.php";
 ?>
 </head>
@@ -60,7 +58,7 @@ include_once "header.php";
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-10">
+        <div class="col-md-8">
             <div style="padding:10px;">
             <?php if(!empty($selectedColumns) && !empty($data)) { ?>
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>

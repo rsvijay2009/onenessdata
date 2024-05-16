@@ -1,6 +1,6 @@
 <?php
 $currentFileName = basename($_SERVER['PHP_SELF']);
-$sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2';
+$sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-3' : 'col-md-3';
 ?>
 <link rel="stylesheet" href="styles/sidebar.css">
 <input type="hidden" id="notification-content" value="<?=$userNotificationMsg?>">
@@ -10,7 +10,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
 </div>
 <div class="<?=$sideBarWithDesign?> bg-light">
     <div class="d-flex flex-column flex-shrink-0 p-3" style="height: 100vh;">
-    <h5 class="logo-data">Onness Data</h5>
+    <a href="<?= WEBSITE_ROOT_PATH ?>" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
             <div class="menu-item">
                 <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>" style="color:#71B6FA; padding-left:13px;">Upload</a>
                 </h6>

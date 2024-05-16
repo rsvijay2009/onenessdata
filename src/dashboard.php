@@ -56,13 +56,35 @@ include_once "header.php";
 
                             foreach ($datatypes as $key => $datatype) {
                                 $backGroundColor = ($key % 2 == 0) ? '#71B6FA' : '#5C6ABD';
-                                $storedProcedureVaraibleName = strtolower($datatype['name']).'_issue';
-                            ?>
-                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: <?=$backGroundColor?>; width: 100%;"><?=$datatype['name']?> -  <?= $spDashboardData[$storedProcedureVaraibleName] ?? 0 ?></div></a>
-                            <?php } ?>
-                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #5C6ABD; width: 100%;">Duplicate entries - <?= $spDashboardData["duplicate_entries_issue"] ?? 0 ?></div>
-                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #71B6FA; width: 100%;">Others - <?= $spDashboardData["others_issue"] ?? 0 ?></div></a>
-                            <a href="view_issue.php?table=<?=$tableName?>" style="cursor:pointer;color:white;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: #5C6ABD; width: 100%;">NULL - <?= $spDashboardData["null_issue"] ?? 0 ?></div></a>
+                                $storedProcedureVariableName = strtolower($datatype['name']).'_issue';
+                                $issueCount = $spDashboardData[$storedProcedureVariableName] ?? 0;
+
+                                if($issueCount == 0) {
+                                    echo '<div class="sticky-bar" style="background-color:#E9EDF0;width: 80%;color:black;">'.$datatype['name'].' -  '.$issueCount.'</div>';
+                                } else {
+                                    echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$datatype['name'].' -  '.$issueCount.'</div></a>';
+                                }
+                             }
+                                $duplicateEntriesIssueCount = $spDashboardData["duplicate_entries_issue"] ?? 0;
+                                $otherIssueCount = $spDashboardData["others_issue"] ?? 0;
+                                $nullIssueCount = $spDashboardData["null_issue"] ?? 0;
+
+                             if($duplicateEntriesIssueCount == 0) {
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0; width: 80%;">Duplicate entries -'.$duplicateEntriesIssueCount.'</div>';
+                             } else {
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Duplicate entries -'.$duplicateEntriesIssueCount.'</div></a>';
+                             }
+                             if($otherIssueCount == 0) {
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others -'.$otherIssueCount.'</div>';
+                             } else {
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others -'.$otherIssueCount.'</div></a>';
+                             }
+                             if($nullIssueCount == 0) {
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others -'.$nullIssueCount.'</div>';
+                             } else {
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Others -'.$nullIssueCount.'</div></a>';
+                             }
+                             ?>
                         </div>
                     </div>
                 </div>
@@ -70,7 +92,7 @@ include_once "header.php";
                     <div class="card">
                     <h5 class="card-title">Total Records</h5>
                         <div class="card-body">
-                            <canvas id="pieChart2"></canvas>
+                            <canvas id="barChart" style="margin-top:53px;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -170,46 +192,48 @@ var ctx1 = document.getElementById('pieChart1').getContext('2d');
             }
         });
 
-        var ctx2 = document.getElementById('pieChart2').getContext('2d');
-        var pieChart2 = new Chart(ctx2, {
-            type: 'pie',
+        var ctx2 = document.getElementById('barChart').getContext('2d');
+        var barChart = new Chart(ctx2, {
+            type: 'bar',
             data: {
                 labels: ['Correct data', 'Wrong data'],
                 datasets: [{
                     data: [<?= $spDashboardData["overall_correct_data"] ?? 0 ?>, <?= $spDashboardData["overall_incorrect_data"] ?? 0?>],
-                    backgroundColor: ['#4DB24F', '#833771']
+                    backgroundColor: ['#4DB24F', '#833771'],
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                    }
+                },
                 plugins: {
                     legend: {
-                        display: true,
-                        position: "right",
-                        labels: {
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            font: {
-                                size: 13,
-                                family: 'Arial',
-                            },
-                        }
+                        display: false
                     },
                     datalabels: {
                         color: '#fff',
                         font: {
+                            size:10,
                             weight: 'bold'
                         },
                         formatter: (value, ctx) => {
                             let sum = 0;
                             let dataArr = ctx.chart.data.datasets[0].data;
                             dataArr.map(data => sum += data);
-                            return (value / sum * 100).toFixed(2) + '%';
+                            return (value / sum * 100).toFixed(2);
                         }
                     },
                     tooltip: {
                         enabled: false
                     },
+                    title: {
+                        display: false // Disable the title plugin
+                    }
                 }
             }
         });

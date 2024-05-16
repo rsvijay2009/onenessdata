@@ -83,6 +83,16 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             $insertData[] = $tableId;
             $insertStmt->execute($insertData);
         }
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+        $stmt->execute();
+        $recordsCount = $stmt->fetchColumn();
+
+        if($recordsCount == 0) {
+            include_once("utilities/common_utils.php");
+            deleteAllTableRelatedData($tableId, $pdo);
+            $tableId = null;
+        }
     }
     //Insert the table datatype details
     if ($tableId) {

@@ -15,12 +15,26 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
         $errorMsg = "Select atleast two data to merge";
     } else {
         $columnCountArr = [];
+        $columnsArr = [];
 
-        foreach ($selectedTablesArr as $value) {
+        foreach ($selectedTablesArr as $key => $value) {
             $value = trim($value);
             $stmt = $pdo->prepare("SELECT * FROM `$value` LIMIT 1");
             $stmt->execute();
             $columnCountArr[] = $stmt->columnCount();
+
+            if($key == 0) {
+                /*To insert the first table datatypes alone in datatypes table otherwise we will face issue
+                    For example if customers table have first_name, last_name and email columns and
+                    sales table have product, prodcut_code, price columns
+                    If we merge these two tables we will create a table like customers_sales_79799 and we have only three columns
+                    like first_name, last_name and email and we lose the sales table column
+                */
+                $stmt = $pdo->prepare("SHOW COLUMNS FROM $value");
+                $stmt->execute();
+                $columnsArr[] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $columnsArr[$key]['table_name'] = $value;
+            }
         }
         if (count(array_unique($columnCountArr)) === 1) {
             $unionSQL = "";
@@ -37,27 +51,43 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
             }
 
             try {
-                $newTableName = $newTableName.time();
+                $newTableName = strtolower($newTableName).time();
                 $newTableName = (strlen($newTableName) > 64) ? substr($newTableName, 0, 64) : $newTableName;
                 $pdo->exec("CREATE TABLE `$newTableName` AS $unionSQL");
 
                 //Insert a new row for mergerd table in tables_list table
-                // $firstTableName = $tableNameList[0] ?? null;
-                // if($firstTableName) {
-                //     $stmt = $pdo->prepare("SELECT project_id FROM tables_list WHERE name = '$firstTableName' LIMIT 1");
-                //     $stmt->execute();
-                //     $project = $stmt->fetch(PDO::FETCH_ASSOC);
-                //     $projectId = $project['project_id'] ?? null;
+                $firstTableName = $tableNameList[0] ?? null;
+                if($firstTableName) {
+                    $stmt = $pdo->prepare("SELECT project_id FROM tables_list WHERE name = '$firstTableName' LIMIT 1");
+                    $stmt->execute();
+                    $project = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $projectId = $project['project_id'] ?? null;
 
-                //     if($projectId) {
-                //         $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id) VALUES ('$newTableName', $projectId)");
-                //         $stmt->execute();
-                //         $mergedtableId = $pdo->lastInsertId();
+                    if($projectId) {
+                        $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id) VALUES ('$newTableName', $projectId)");
+                        $stmt->execute();
+                        $mergedtableId = $pdo->lastInsertId();
 
-                //         $stmt = $pdo->prepare("UPDATE $newTableName SET table_id =  $mergedtableId");
-                //         $stmt->execute();
-                //     }
-                // }
+                        $stmt = $pdo->prepare("UPDATE $newTableName SET table_id =  $mergedtableId");
+                        $stmt->execute();
+
+
+                        //Insert the datatypes of merged data into table_datatypes table
+                        if(count($columnsArr) > 0) {
+                            foreach ($columnsArr as $value) {
+                                $tableName =  $value['table_name'];
+
+                                // SQL query to copy data and insert into the same table with modified table names
+                                $sql = "INSERT INTO table_datatypes (table_name, table_id, column_name, datatype_id, datatype, data_quality, uniqueness)
+                                SELECT '$newTableName' AS table_name, $mergedtableId AS table_id, column_name, datatype_id, datatype, data_quality, uniqueness
+                                FROM table_datatypes WHERE table_name = '$tableName'";
+
+                                $stmt = $pdo->prepare($sql);
+                                $stmt->execute();
+                            }
+                        }
+                    }
+                }
                 $successMsg = "Data merged successfully!!";
             } catch (PDOException $e) {
                 die("Error fetching tables: " . $e->getMessage());

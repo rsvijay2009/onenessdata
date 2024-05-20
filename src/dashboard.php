@@ -272,7 +272,7 @@ var barChart = new Chart(ctx2, {
         }
     }
 });
-//To prevent the charts disappear while swith to another tabs in browser and come back
+//To prevent the charts not to disappear while switch to another tabs in browser and come back
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') {
         pieChart.update();

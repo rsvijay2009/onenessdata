@@ -70,19 +70,19 @@ include_once "header.php";
                                 $nullIssueCount = $spDashboardData["null_issue"] ?? 0;
 
                              if($duplicateEntriesIssueCount == 0) {
-                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0; width: 80%;">Duplicate entries -'.$duplicateEntriesIssueCount.'</div>';
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0; width: 80%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Duplicate entries -'.$duplicateEntriesIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div></a>';
                              }
                              if($otherIssueCount == 0) {
-                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others -'.$otherIssueCount.'</div>';
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others - '.$otherIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others -'.$otherIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others - '.$otherIssueCount.'</div></a>';
                              }
                              if($nullIssueCount == 0) {
-                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others -'.$nullIssueCount.'</div>';
+                                echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">NULL - '.$nullIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Others -'.$nullIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">NULL - '.$nullIssueCount.'</div></a>';
                              }
                              ?>
                         </div>
@@ -270,6 +270,13 @@ var barChart = new Chart(ctx2, {
                 display: false // Disable the title plugin
             }
         }
+    }
+});
+//To prevent the charts disappear while swith to another tabs in browser and come back
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        pieChart.update();
+        barChart.update();
     }
 });
 </script>

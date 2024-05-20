@@ -68,8 +68,9 @@ BEGIN
     DECLARE email_issue INT DEFAULT 50;
     DECLARE duplicate_entries_issue INT DEFAULT 60;
     DECLARE others_issue INT DEFAULT 70;
-    DECLARE overall_correct_data INT DEFAULT 10;
-	DECLARE overall_incorrect_data INT DEFAULT 90;
+    DECLARE null_issue INT DEFAULT 0;
+    DECLARE overall_correct_data INT DEFAULT 30;
+	DECLARE overall_incorrect_data INT DEFAULT 70;
     SELECT data_quality_correct_data AS 'data_quality_correct_data', 
     data_quality_incorrect_data AS 'data_quality_incorrect_data',
     text_issue AS 'text_issue',
@@ -79,6 +80,7 @@ BEGIN
     email_issue AS 'email_issue',
     duplicate_entries_issue AS 'duplicate_entries_issue',
     others_issue AS 'others_issue',
+    null_issue AS 'null_issue',
     overall_correct_data AS 'overall_correct_data',
     overall_incorrect_data AS 'overall_incorrect_data';
     

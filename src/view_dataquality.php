@@ -32,13 +32,19 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
 
         // Output header row (if necessary)
         $firstRow = true;
+        $sNo = 1;
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            unset($row['table_id']);
+            unset($row['primary_key']);
+            $row = array_merge(array('S.No' => $sNo), $row);
             if ($firstRow) {
                 echo implode(",", array_keys($row)) . "\r\n";
                 $firstRow = false;
             }
             echo implode(",", array_values($row)) . "\r\n";
+            $sNo++;
         }
+        exit;
     } else if($_POST['downloadType'] == 'excel') {
         // Create new Spreadsheet object
         $spreadsheet = new Spreadsheet();
@@ -100,7 +106,7 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
 
         // Set headers to download file rather than display
         header('Content-Type: application/sql');
-        header('Content-Disposition: attachment;filename="output.sql"');
+        header('Content-Disposition: attachment;filename="'.$tableName.'.sql"');
         header('Cache-Control: max-age=0');
 
         echo $sqlDump;

@@ -53,13 +53,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-3' : 'col-md-3'
                     </ul>
                 </div>
             <?php } ?>
-                <div class="">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" style="color:#71B6FA" href="merge.php">Merge</a>
-                        </li>
-                    </ul>
-                </div>
+                    <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="merge.php">Merge</a>
         </form>
     </div>
 </div>

@@ -1,0 +1,10 @@
+Cannot use phpoffice/phpspreadsheet's latest version 2.1.0 as it requires ext-gd * which is missing from your platform.
+
+
+sudo apt-get update
+sudo apt-get install php-gd
+
+
+Enable gd library in php.ini file and restart the apache server
+
+composer require phpoffice/phpspreadsheet --platform="php": "8.0"

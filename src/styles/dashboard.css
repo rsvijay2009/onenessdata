@@ -42,11 +42,12 @@
     flex-direction:column;
     height: 14px;
     margin: 11px 0;
-    background: linear-gradient(to right, rgb(193,123,171) var(--percentage) , rgb(194,196,95) 0%);
+    background: linear-gradient(to right, rgb(204,49,61) var(--percentage) , rgb(247,197,204) 0%);
     margin-bottom:-6px;
     color:white;
     font-size:10px;
-    border-radius: 3px;;
+    border-radius: 3px;
+    min-width:30%;
 }
 .sticky-bar-1 {
     flex-direction:column;

@@ -41,7 +41,7 @@ include_once "header.php";
                     <div class="card">
                     <h5 class="card-title">Data Quality</h5>
                         <div class="card-body">
-                            <canvas id="pieChart1"></canvas>
+                            <canvas id="pieChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -112,7 +112,7 @@ include_once "header.php";
                         <tbody>
                         <?php foreach ($columns as $column) { ?>
                                     <tr>
-                                    <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" class="table-name-link"><?= $column["column_name"]?></a></td>
+                                    <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
                                     <td>
                                         <div class="sticky-bar-container">
                                             <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column["data_quality"]?>%;"></div>
@@ -121,8 +121,13 @@ include_once "header.php";
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar2" style="background-color: #C17CAB; width: 50%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div>
-                                            <!-- <div class="sticky-bar-1" style="background-color: #71B6FA; width: 50%; border-radius:3px;font-size:10px; text-align:center;">Uniqueness - <?= $column["uniqueness"]?>%</div> -->
+                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 50%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
+
+                                            <?php if($column["uniqueness"] < 100) { ?>
+                                                <div class="sticky-bar-1" style="background-color: #A7BEAE; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
+                                            <?php } else { ?>
+                                                <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>
+                                            <?php } ?>
                                             <div class="sticky-bar-1" style="background-color: #5C6ABD; width: 50%; border-radius:3px;font-size:10px;text-align:center;">Completeness - 97%</div>
                                         </div>
                                     </td>
@@ -140,103 +145,133 @@ include_once "header.php";
 <script>
 // Register the Datalabels plugin with Chart.js
 Chart.register(ChartDataLabels);
-var ctx1 = document.getElementById('pieChart1').getContext('2d');
-        var pieChart1 = new Chart(ctx1, {
-            type: 'pie',
-            data: {
-                labels: ['Incorrect data', 'Correct data'],
-                datasets: [{
-                    data: [<?= $spDashboardData["data_quality_correct_data"] ?? 0 ?>, <?= $spDashboardData["data_quality_incorrect_data"] ?? 0 ?>],
-                    backgroundColor: ['#E92C18', '#4DB24F']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Overall Score',
-                        position: 'bottom',
-                        font: {
-                            size: 13
-                        }
-                    },
-                    legend: {
-                        display: true,
-                        position: "right",
-                        labels: {
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            font: {
-                                size: 13,
-                                family: 'Arial',
-                            },
-                        }
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        font: {
-                            weight: 'bold'
-                        },
-                        formatter: (value, ctx) => {
-                            let sum = 0;
-                            let dataArr = ctx.chart.data.datasets[0].data;
-                            dataArr.map(data => sum += data);
-                            return (value / sum * 100).toFixed(2) + '%';
-                        }
-                    },
-                    tooltip: {
-                        enabled: false
-                    },
-                }
+const data = {
+    labels: ['Incorrect data', 'Correct data'],
+    datasets: [{
+        data: [<?= $spDashboardData["data_quality_correct_data"] ?? 0 ?>, <?= $spDashboardData["data_quality_incorrect_data"] ?? 0 ?>],
+        backgroundColor: ['#E92C18', '#4DB24F']
+    }]
+};
+// Config for the chart
+const pieChartconfig = {
+  type: 'pie',
+  data: data,
+  options: {
+    responsive: true,
+    onClick: (evt, elements) => {
+        if (elements.length > 0) {
+            const chartElement = elements[0];
+            const index = chartElement.index;
+            const label = data.labels[index];
+            const urlMap = {
+                'Incorrect data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&type=incorrect',
+                'Correct data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&type=correct',
+            };
+            const url = urlMap[label];
+            if (url) {
+                window.open(url, '_blank');
             }
-        });
-
-        var ctx2 = document.getElementById('barChart').getContext('2d');
-        var barChart = new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: ['Correct data', 'Wrong data'],
-                datasets: [{
-                    data: [<?= $spDashboardData["overall_correct_data"] ?? 0 ?>, <?= $spDashboardData["overall_incorrect_data"] ?? 0?>],
-                    backgroundColor: ['#4DB24F', '#833771'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                    }
+        }
+    },
+    onHover: (evt, elements) => {
+      const canvas = document.getElementById('pieChart');
+      if (elements.length > 0) {
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+    },
+    plugins: {
+        title: {
+            display: true,
+            text: 'Overall Score',
+            position: 'bottom',
+            font: {
+                size: 13
+            }
+        },
+        legend: {
+            display: true,
+            position: "right",
+            labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                font: {
+                    size: 13,
+                    family: 'Arial',
                 },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    datalabels: {
-                        color: '#fff',
-                        font: {
-                            size:10,
-                            weight: 'bold'
-                        },
-                        formatter: (value, ctx) => {
-                            let sum = 0;
-                            let dataArr = ctx.chart.data.datasets[0].data;
-                            dataArr.map(data => sum += data);
-                            return (value / sum * 100).toFixed(2);
-                        }
-                    },
-                    tooltip: {
-                        enabled: false
-                    },
-                    title: {
-                        display: false // Disable the title plugin
-                    }
-                }
             }
-        });
+        },
+        datalabels: {
+            color: '#fff',
+            font: {
+                weight: 'bold'
+            },
+            formatter: (value, ctx) => {
+                let sum = 0;
+                let dataArr = ctx.chart.data.datasets[0].data;
+                dataArr.map(data => sum += data);
+                return (value / sum * 100).toFixed(2) + '%';
+            }
+        },
+        tooltip: {
+            enabled: false
+        },
+    }
+  }
+};
+// Render the pie chart
+const pieChart = new Chart(
+  document.getElementById('pieChart'),
+  pieChartconfig
+);
+
+
+var ctx2 = document.getElementById('barChart').getContext('2d');
+var barChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+        labels: ['Correct data', 'Wrong data'],
+        datasets: [{
+            data: [<?= $spDashboardData["overall_correct_data"] ?? 0 ?>, <?= $spDashboardData["overall_incorrect_data"] ?? 0?>],
+            backgroundColor: ['#4DB24F', '#833771'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            datalabels: {
+                color: '#fff',
+                font: {
+                    size:10,
+                    weight: 'bold'
+                },
+                formatter: (value, ctx) => {
+                    let sum = 0;
+                    let dataArr = ctx.chart.data.datasets[0].data;
+                    dataArr.map(data => sum += data);
+                    return (value / sum * 100).toFixed(2);
+                }
+            },
+            tooltip: {
+                enabled: false
+            },
+            title: {
+                display: false // Disable the title plugin
+            }
+        }
+    }
+});
 </script>
 </body>
 </html>

@@ -71,7 +71,6 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $insertValues = implode(", ", array_fill(0, count($selectedColumns), "?"));
         $insertSQL = "INSERT INTO `$tableName` ($insertColumns) VALUES ($insertValues)";
         $insertStmt = $pdo->prepare($insertSQL);
-        $row = fgetcsv($handle);
 
         while (($row = fgetcsv($handle)) !== false) {
             $insertData = [];

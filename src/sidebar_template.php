@@ -1,6 +1,6 @@
 <?php
 $currentFileName = basename($_SERVER['PHP_SELF']);
-$sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-3' : 'col-md-3';
+$sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2';
 ?>
 <link rel="stylesheet" href="styles/sidebar.css">
 <input type="hidden" id="notification-content" value="<?=$userNotificationMsg?>">

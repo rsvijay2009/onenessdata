@@ -84,7 +84,7 @@ include_once "header.php";
                             </a>
                         </li>
                         <?php foreach ($columns as $col): ?>
-                            <?php if($col != 'primary_key') {?>
+                            <?php if($col != 'primary_key' && $col != 'table_name') {?>
                                 <li>
                                     <a class="dropdown-item">
                                     <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="<?= htmlspecialchars($col) ?>" id="checkbox-<?= htmlspecialchars($col) ?>" <?= in_array($col, $selectedColumns) ? 'checked' : '' ?>>
@@ -100,7 +100,7 @@ include_once "header.php";
                         <thead>
                             <tr>
                                 <?php foreach ($selectedColumns as $col): ?>
-                                    <?php if($col != 'primary_key') {?>
+                                    <?php if($col != 'primary_key' && $col != 'table_name') {?>
                                         <th><?= htmlspecialchars($col) ?></th>
                                     <?php } ?>
                                 <?php endforeach; ?>
@@ -111,7 +111,7 @@ include_once "header.php";
                             <?php foreach ($data as $row): ?>
                                 <tr>
                                     <?php foreach ($selectedColumns as $col): ?>
-                                        <?php if($col != 'primary_key') {?>
+                                        <?php if($col != 'primary_key' && $col != 'table_name') {?>
                                             <td style="max-width:100%">
                                                 <?php if($col == $columnToHighlight) {?>
                                                     <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col]) ?></span>

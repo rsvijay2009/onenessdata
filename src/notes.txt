@@ -57,3 +57,13 @@ uniqueness as a single sticky bar like completeness
 8. Dim issues when the issue count is 0 and remove the hyperlink - Done
 
 9. Create view stats for each column. Create top 5 values and bottom 5 values when uniqueness is not 100%- see my diagram attached for reference.
+
+
+Need to create a new column as table_ref in merged table
+
+Need to remove the % symbol as well as background of bar chart
+
+Email_id is not working in import
+
+
+Datatype is mandatory

@@ -26,6 +26,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
     $header = fgetcsv($handle);
     $indices = array_flip($header);
     $selectedColumns[] = "table_id";
+    $selectedColumns[] = "table_name";
     $selectedIndices = array_intersect_key(
         $indices,
         array_flip($selectedColumns)
@@ -45,10 +46,12 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             }
         }, $selectedColumns);
 
+        $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
         $isTableCreated = true;
     } catch (PDOException $e) {
+        echo $e->getMessage();
         $isTableCreated = false;
     }
 
@@ -75,11 +78,14 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         while (($row = fgetcsv($handle)) !== false) {
             $insertData = [];
             foreach ($selectedIndices as $col => $index) {
-                if ($row[$index] ?? null) {
+                if (isset($row[$index]) && $row[$index] !== '') {
                     $insertData[] = $row[$index];
+                } else {
+                    $insertData[] = null; // Set null for empty values
                 }
             }
             $insertData[] = $tableId;
+            $insertData[] = $tableName;
             $insertStmt->execute($insertData);
         }
 

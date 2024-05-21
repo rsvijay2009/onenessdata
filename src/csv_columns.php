@@ -32,7 +32,7 @@ include_once "sidebar.php"
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-        <div class="col-md-9">
+        <div class="col-md-10">
             <div class="table-responsive" style="margin:20px;">
             <table class="table table-bordered">
             <thead>

@@ -42,7 +42,7 @@
     flex-direction:column;
     height: 14px;
     margin: 11px 0;
-    background: linear-gradient(to right, rgb(204,49,61) var(--percentage) , rgb(247,197,204) 0%);
+    background: linear-gradient(to right, rgb(204,49,61) var(--percentage) , rgb(106,177,135) 0%);
     margin-bottom:-6px;
     color:white;
     font-size:10px;

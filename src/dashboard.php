@@ -34,7 +34,7 @@ include_once "header.php";
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-9">
+        <div class="col-md-10">
             <div class="row g-4">
                 <!-- Cards with Charts -->
                 <div class="col-md-4">
@@ -124,7 +124,7 @@ include_once "header.php";
                                             <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 50%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
 
                                             <?php if($column["uniqueness"] < 100) { ?>
-                                                <div class="sticky-bar-1" style="background-color: #A7BEAE; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
+                                                <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
                                             <?php } else { ?>
                                                 <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>
                                             <?php } ?>
@@ -211,7 +211,7 @@ const pieChartconfig = {
                 let sum = 0;
                 let dataArr = ctx.chart.data.datasets[0].data;
                 dataArr.map(data => sum += data);
-                return (value / sum * 100).toFixed(2) + '%';
+                return (value / sum * 100)+ '%';
             }
         },
         tooltip: {
@@ -244,6 +244,14 @@ var barChart = new Chart(ctx2, {
             y: {
                 beginAtZero: true,
                 max: 100,
+                grid: {
+                    display: false // Disable grid lines
+                }
+            },
+            x: {
+                grid: {
+                    display: false // Disable grid lines
+                }
             }
         },
         plugins: {
@@ -260,7 +268,7 @@ var barChart = new Chart(ctx2, {
                     let sum = 0;
                     let dataArr = ctx.chart.data.datasets[0].data;
                     dataArr.map(data => sum += data);
-                    return (value / sum * 100).toFixed(2);
+                    return (value / sum * 100);
                 }
             },
             tooltip: {

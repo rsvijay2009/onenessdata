@@ -17,7 +17,7 @@ try {
     $stmt->execute([$tableName]);
 
     if ($stmt->fetch()) {
-        $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id')");
+        $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id', 'table_name')");
         $columnQuery->execute();
         $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 

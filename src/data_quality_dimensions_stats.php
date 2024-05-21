@@ -43,7 +43,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
         <?php if(count($data) > 0) { ?>
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <!-- Table Below Cards -->
                 <div style="padding:10px;">
                     <h3>Stats of dimensions</h3>
@@ -134,7 +134,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         <?php } else {?>
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div style="margin-top:30px;text-align:center; color:red; font-size:25px;">Sorry! Stats not available</div>
             </div>
         <?php } ?>

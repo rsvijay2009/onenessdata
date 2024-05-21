@@ -26,33 +26,39 @@ include_once "header.php";
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
         <div class="col-md-10">
-            <div style="padding:10px;">
-                <h2 style="margin-bottom:25px;">Issues from the <?=$tableName?> table</h2>
-                <div class="">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Column Name</th>
-                                <th>Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($issues as $issue) { ?>
+            <?php if(count($issues) > 0) {?>
+                <div style="padding:10px;">
+                    <h2 style="margin-bottom:25px;">Issues from the <?=$tableName?> table</h2>
+                    <div class="">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <?php if($issue['count'] > 0) {?>
-                                            <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
-                                        <?php } else { ?>
-                                            <?=$issue['column_name']?>
-                                        <?php } ?>
-                                        </td>
-                                    <td><?=$issue['count']?></td>
+                                    <th>Column Name</th>
+                                    <th>Count</th>
                                 </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($issues as $issue) { ?>
+                                    <tr>
+                                        <td>
+                                            <?php if($issue['count'] > 0) {?>
+                                                <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
+                                            <?php } else { ?>
+                                                <?=$issue['column_name']?>
+                                            <?php } ?>
+                                            </td>
+                                        <td><?=$issue['count']?></td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            <?php } else {?>
+                <div style="padding:10px;">
+                    <h4 style="margin-bottom:25px; text-align:center;color:red; margin-top:30px;">There is no issue in the <?=$tableName?> table</h2>
+                </div>
+            <?php } ?>
         </div>
     </div>
 </div>

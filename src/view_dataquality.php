@@ -121,7 +121,7 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-9">
+        <div class="col-md-10">
             <!-- Table Below Cards -->
             <div style="padding:10px;">
                 <?php if(!empty($data)) { ?>

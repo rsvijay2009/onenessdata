@@ -52,7 +52,7 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
 
             try {
                 $newTableName = strtolower($newTableName).time();
-                $newTableName = (strlen($newTableName) > 64) ? substr($newTableName, 0, 64) : $newTableName;
+                $newTableName = (strlen($newTableName) > 20) ? substr($newTableName, 0, 20) : $newTableName;
                 $pdo->exec("CREATE TABLE `$newTableName` AS $unionSQL");
 
                 //Insert a new row for mergerd table in tables_list table
@@ -105,7 +105,7 @@ include_once "header.php";
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-        <div class="col-md-9">
+        <div class="col-md-10">
             <form action="merge.php" method="post">
                     <input type="hidden" id="selected_tables" name="selected_tables" value="">
                     <!-- <input type="hidden" id="errMsg" name="errMsg" value=<?= $errorMsg ?>>

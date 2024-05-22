@@ -139,5 +139,6 @@ function deleteAllTableRelatedData($tableId = 0, PDO $pdo)
 
 function addUnderScoreBetweenSpaceInString($string)
 {
-    return preg_replace('/\s+/', '_', $string);
+    $string = preg_replace('/\s+/', '_', $string);
+    return preg_replace('/_+/', '_', $string);
 }

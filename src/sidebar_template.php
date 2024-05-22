@@ -35,8 +35,8 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     <div class="menu collapse" id="<?= $project["name"] ?>">
                         <?php foreach ($tables as $table) { ?>
                             <ul class="nav flex-column p-1">
-                                    <li class="nav-item"  draggable="true" ondragstart="drag(event)">
-                                        <a href="dashboard.php?table_name=<?=$table["name"]?>" style="text-decoration:none; color:black;padding-left:15px;" role="button"><?= ucfirst(
+                                    <li class="nav-item"  draggable="true" ondragstart="drag(event)" style="max-width:215px; word-wrap:break-word;">
+                                        <a href="dashboard.php?table_name=<?=$table["name"]?>" style="text-decoration:none; color:black;padding-left:14px;" role="button"><?= ucfirst(
                                             $table["name"]
                                         ) ?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                                     </a>

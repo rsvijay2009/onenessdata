@@ -4,15 +4,21 @@
 
 2. Navigate to the current project directory
     
-    `cd /var/www/onenesssdata.com/staging_new`
+    ```
+    cd /var/www/onenesssdata.com/staging_new
+    ```
     
 3. Delete the existing project folder
 
-    `rm -rf onenessdata`
+    ```
+    rm -rf onenessdata
+    ```
 
 4. Clone the latest version from Github
 
-    `git clone https://github.com/rsvijay2009/onenessdata.git`
+    ```
+    git clone https://github.com/rsvijay2009/onenessdata.git
+    ```
 
 5. Give 777 permission for the uploads folder
 
@@ -25,4 +31,6 @@
 
 7. Run the command to install all the required packages
 
-    `composer install`
+    ```
+    composer install
+    ```

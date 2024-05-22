@@ -3,7 +3,7 @@
     "description": "",
     "type": "project",
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-gd": "*",
         "phpoffice/phpspreadsheet": "^2.1",
         "maennchen/zipstream-php": "^2.1.0"

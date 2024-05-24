@@ -16,7 +16,7 @@ function drag(ev) {
 var droppedData = [null, null, null];
 
 function updateDroppedDataList() {
-    var dataList = droppedData.filter(data => data !== null).join(", ");
+    var dataList = droppedData.filter(data => data !== null).join(", ").toLowerCase();
     document.getElementById('selected_tables').value = dataList;
 }
 function drop(ev) {

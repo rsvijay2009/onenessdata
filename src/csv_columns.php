@@ -26,65 +26,66 @@ include_once "sidebar.php"
 <?php if (!empty($error)) {
     include_once "error_msg.php";
 } else {?>
-<form action="import.php" method="post" class="csv_columns_form">
-<input type="hidden" name="table_name" value="<?= $tableName ?>">
-<input type="hidden" name="project_id" value="<?= $projectId ?>">
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-        <div class="col-md-10">
-            <div class="table-responsive" style="margin:20px;">
-            <table class="table table-bordered">
-            <thead>
-                <tr style="background:#E9EDF0"> 
-                    <th><input type="checkbox" class="highlightCheck" id="selectAll" onclick="toggleCheckboxes(this)">Column Name</th>
-                    <th>Datatype</th>
-                </tr>
-            </thead>
-                    <tbody>
-                    <?php
-                    if (!isset($_GET["file"]) || empty($_GET["file"])) {
-                        die("File is not specified.");
-                    }
-                    $file = $_GET["file"];
-                    if (($handle = fopen($file, "r")) !== false) {
-                        if (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                            $datatypeHtml = "";
-                            foreach ($dataTypes as $dataType) {
-                                $id = $dataType["id"];
-                                $datatypeName = $dataType["name"];
-                                $dataTypeDescription = $dataType["description"];
-                                $datatypeHtml .="<option value='" .$id ."'>$datatypeName ( $dataTypeDescription )</option>";
+            <div class="col-md-10">
+                <form action="import.php" method="post" class="csv_columns_form">
+                    <input type="hidden" name="table_name" value="<?= $tableName ?>">
+                    <input type="hidden" name="project_id" value="<?= $projectId ?>">
+                    <div class="table-responsive" style="margin:20px;">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr style="background:#E9EDF0">
+                                    <th><input type="checkbox" class="highlightCheck" id="selectAll" onclick="toggleCheckboxes(this)">Column Name</th>
+                                    <th>Datatype</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            if (!isset($_GET["file"]) || empty($_GET["file"])) {
+                                die("File is not specified.");
                             }
-                            foreach ($data as $index => $column) {
-                                echo "<tr>
-                                        <td style='padding:5px;'><input class='highlightCheck' type='checkbox' id='{$column}' name='columns[]' value='{$column}'>
-                                        <label for='{$column}'>" .
-                                            htmlspecialchars($column) ."
-                                        </td>
-                                        <td>
-                                            <div class='form-group'>
-                                                <select class='form-select' id='datatype' name='datatype[]'>
-                                                    <option selected value=''>Choose datatype</option>
-                                                    $datatypeHtml
-                                                </select>
-                                            </div>
-                                        </td>
-                                    </tr>";
+                            $file = $_GET["file"];
+                            if (($handle = fopen($file, "r")) !== false) {
+                                if (($data = fgetcsv($handle, 1000, ",")) !== false) {
+                                    $datatypeHtml = "";
+                                    foreach ($dataTypes as $dataType) {
+                                        $id = $dataType["id"];
+                                        $datatypeName = $dataType["name"];
+                                        $dataTypeDescription = $dataType["description"];
+                                        $datatypeHtml .="<option value='" .$id ."'>$datatypeName ( $dataTypeDescription )</option>";
+                                    }
+                                    foreach ($data as $index => $column) {
+                                        echo "<tr>
+                                                <td style='padding:5px;'><input class='highlightCheck' type='checkbox' id='{$column}' name='columns[]' value='{$column}'>
+                                                <label for='{$column}'>" .
+                                                    htmlspecialchars($column) ."
+                                                </td>
+                                                <td>
+                                                    <div class='form-group'>
+                                                        <select class='form-select' id='datatype_".htmlspecialchars($column)."' name='datatype[]'>
+                                                            <option selected value=''>Choose datatype</option>
+                                                            $datatypeHtml
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </tr>";
+                                    }
+                                }
+                                fclose($handle);
                             }
-                        }
-                        fclose($handle);
-                    }
-                    ?>
-                    </tbody>
-                </table>
-                <input type="submit" value="Import">
+                            ?>
+                            </tbody>
+                        </table>
+                        <input type="submit" value="Import">
+                    </div>
+                    <input type="hidden" name="file" value="<?php echo htmlspecialchars($file); ?>">
+                </form>
             </div>
-        </div>
-        <input type="hidden" name="file" value="<?php echo htmlspecialchars($file); ?>">
     </div>
 </div>
-</form>
+
 <script src="scripts/csv_columns.js"></script>
 </body>
 <?php } ?>

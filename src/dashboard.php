@@ -121,14 +121,14 @@ include_once "header.php";
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 50%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
+                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
 
                                             <?php if($column["uniqueness"] < 100) { ?>
                                                 <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
                                             <?php } else { ?>
                                                 <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>
                                             <?php } ?>
-                                            <div class="sticky-bar-1" style="background-color: #5C6ABD; width: 50%; border-radius:3px;font-size:10px;text-align:center;">Completeness - 97%</div>
+                                            <div class="sticky-bar-1" style="background-color: #5C6ABD; width: 40%; border-radius:3px;font-size:10px;text-align:center;">Completeness - 97%</div>
                                         </div>
                                     </td>
                                 </tr>

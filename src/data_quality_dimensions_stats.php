@@ -58,7 +58,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($data as $row): ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($row[$columnName]) ?></td>
+                                            <td><?= htmlspecialchars($row[$columnName]?? 'NULL') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -85,7 +85,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                                                     <tbody>
                                                         <?php foreach($top5Data as $top5) {?>
                                                             <tr>
-                                                                <td><?=$top5[$columnName]?></td>
+                                                                <td><?=$top5[$columnName] ?? 'NULL'?></td>
                                                                 <td><?=$top5['count']?></td>
                                                             </tr>
                                                         <?php } ?>
@@ -118,7 +118,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                                                     <tbody>
                                                         <?php foreach($bottom5Data as $bottom5) {?>
                                                             <tr>
-                                                                <td><?=$bottom5[$columnName]?></td>
+                                                                <td><?=$bottom5[$columnName] ?? 'NULL'?></td>
                                                                 <td><?=$bottom5['count']?></td>
                                                             </tr>
                                                         <?php } ?>

@@ -42,7 +42,7 @@ input[type="submit"]:hover {
 .logo-data {
     font-size: 25px;
     font-weight:bold;
-    background: linear-gradient(to right, #258B27 26%, #F01815 26%);
+    background: linear-gradient(to right, #258B27 45%, #F01815 26%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     

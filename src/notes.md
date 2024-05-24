@@ -5,7 +5,7 @@
 2. Navigate to the current project directory
     
     ```
-    cd /var/www/onenesssdata.com/staging_new
+    cd /var/www/onenessdata.com/staging_new
     ```
     
 3. Delete the existing project folder

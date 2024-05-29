@@ -4,6 +4,7 @@ include_once "sidebar.php";
 
 $tableName = $_REQUEST['table'] ?? null;
 $columnName = $_REQUEST['column'] ?? null;
+$projectName = $_REQUEST['project'] ?? null;
 $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
@@ -137,7 +138,7 @@ include_once "header.php";
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;">No incorrect data found for the <?=$columnToHighlight?> <a href="dashboard.php?table_name=<?=$tableName?>">click here </a> to go back
+                                <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;">No incorrect data found for the <?=$columnToHighlight?> <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>">click here </a> to go back
                             </td>
                             </tr>
                         </tbody>

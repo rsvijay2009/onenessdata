@@ -64,7 +64,7 @@ include_once "header.php";
                                 if($issueCount == 0) {
                                     echo '<div class="sticky-bar" style="background-color:#E9EDF0;width: 80%;color:black;">'.$datatype['name'].' -  '.$issueCount.'</div>';
                                 } else {
-                                    echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$datatype['name'].' -  '.$issueCount.'</div></a>';
+                                    echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$datatype['name'].' -  '.$issueCount.'</div></a>';
                                 }
                              }
                                 $duplicateEntriesIssueCount = $spDashboardData["duplicate_entries_issue"] ?? 0;
@@ -74,17 +74,17 @@ include_once "header.php";
                              if($duplicateEntriesIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0; width: 80%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div></a>';
                              }
                              if($otherIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others - '.$otherIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others - '.$otherIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others - '.$otherIssueCount.'</div></a>';
                              }
                              if($nullIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">NULL - '.$nullIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">NULL - '.$nullIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">NULL - '.$nullIssueCount.'</div></a>';
                              }
                              ?>
                         </div>
@@ -113,7 +113,7 @@ include_once "header.php";
                         <tbody>
                         <?php foreach ($columns as $column) { ?>
                                     <tr>
-                                    <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
+                                    <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
                                     <td>
                                         <div class="sticky-bar-container">
                                             <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column["data_quality"]?>%;"></div>
@@ -125,7 +125,7 @@ include_once "header.php";
                                             <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
 
                                             <?php if($column["uniqueness"] < 100) { ?>
-                                                <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
+                                                <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
                                             <?php } else { ?>
                                                 <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>
                                             <?php } ?>

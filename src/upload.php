@@ -26,7 +26,7 @@ if (!empty($projectName)) {
 }
 if (!empty($error)) {
     echo $error;
-    header("Location: index.php?error=$error");
+    header("Location: home.php?error=$error");
     exit();
 } else {
     if(isset($_POST["projectName"]) && !empty($_POST["projectName"])) {

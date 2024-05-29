@@ -47,6 +47,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Table Below Cards -->
                 <div style="padding:10px;">
                     <h3>Stats of dimensions</h3>
+                    <a href="dashboard.php?table_name=<?=$tableName?>">&lt;&lt;Back</a>
                     <div class="row g-4">
                         <div class="col-md-4">
                             <table class="table mt-3 table-bordered">
@@ -135,7 +136,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php } else {?>
             <div class="col-md-10">
-                <div style="margin-top:30px;text-align:center; color:red; font-size:25px;">Sorry! Stats not available</div>
+                <div style="margin-top:30px;text-align:center; color:red; font-weight:bold;font-size:20px;">Sorry! Stats not available <a href="dashboard.php?table_name=<?=$tableName?>">click here </a> to go back</div>
             </div>
         <?php } ?>
     </div>

@@ -1,62 +1,74 @@
 <?php
-include_once "sidebar.php";
-$error = "";
-$requestErr = $_REQUEST["error"] ?? "";
+session_start();
 
-if ($requestErr == "table") {
-    $error = "Table name already exist. please try some other name";
-} elseif ($requestErr == "project") {
-    $error = "Project name already exist. please try some other name";
+if(isset($_SESSION['authenticated']) && $_SESSION['authenticated'] == true) {
+    header('Location: home.php');
+    exit;
 }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
+    include_once "database.php";
+    // PDO connection setup
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-include_once "header.php";
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = '".$_POST['username']."' AND password = '".$_POST['password']."'");
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Replace with actual authentication logic
+    if (!empty($user)) {
+        $_SESSION['authenticated'] = true;
+        $_SESSION['username'] = $user['username'] ?? '';
+        header('Location: home.php');
+        exit;
+    } else {
+        $error = "Invalid username or password.";
+    }
+}
 ?>
-<link rel="stylesheet" href="styles/index.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <?php include_once "sidebar_template.php"; ?>
-        <!-- Content Area -->
-        
-        <div class="col-md-4" style="margin:10px; padding:30px">
-        <?php if (!empty($error)) { ?>
-            <p class="errorMsg" id="errorMsg" style="color:red;padding-bottom:10px;"><?= $error ?></p>
-          <?php } ?>
-        <form action="upload.php" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="projectName" class="form-label">Project Name</label>
-                <input type="text" class="form-control" id="projectName" name="projectName" placeholder="Enter project name">
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Login</h2>
+                <form method="post" action="index.php">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+                <?php if (isset($error)) { echo "<p class='text-danger text-center mt-3'>$error</p>"; } ?>
             </div>
-            <?php try {
-                $stmt = $pdo->prepare("SELECT id, name FROM projects");
-                $stmt->execute();
-                $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                $projects = [];
-            } ?>
-            <div class="mb-3">
-                <label for="projectList" class="form-label">Choose Project</label>
-                <select class="form-select" id="projectList" name="projectList">
-                    <option selected value="">Choose project</option>
-                    <?php foreach ($projects as $project) { ?>
-                        <option value=<?= $project["id"] ?>><?= ucfirst($project["name"]) ?></option>
-                    <?php } ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="tableName" class="form-label">Table Name</label>
-                <input type="text" class="form-control" id="tableName" name="tableName" placeholder="Enter table name" required>
-            </div>
-            <div class="mb-3">
-                <label for="chooseFile" class="form-label">Choose File</label>
-                <input type="file" class="form-control" id="fileToUpload" name="fileToUpload" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        </div>
     </div>
-    </div>
-</div>
-<script src="scripts/index.js"></script>
 </body>
 </html>

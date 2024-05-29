@@ -126,6 +126,7 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
             <div style="padding:10px;">
                 <?php if(!empty($data)) { ?>
                     <div class="dropdown" style="display: flex; justify-content: flex-end; margin-top:40px;">
+                        <a href="dashboard.php?table_name=<?=$tableName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                            Download as
                         </button>

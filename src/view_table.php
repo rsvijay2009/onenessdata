@@ -58,10 +58,10 @@ include_once "header.php";
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div style="padding:10px;">
-            <?php if(!empty($selectedColumns) && !empty($data)) { ?>
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>
+            <?php if(!empty($selectedColumns) && !empty($data)) { ?>
                 <div class="dropdown" style="display: flex; justify-content: flex-end;">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                         Select Columns
@@ -122,9 +122,26 @@ include_once "header.php";
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    <a href="dashboard.php?table_name=<?=$tableName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     <?php } else {?>
-                        <div style="text-align:center; color:red; font-size:20px;">No incorrect data found for the <?=$columnToHighlight?>
-                    column </div>
+                        <table class="table">
+                        <thead>
+                            <tr>
+                                <?php foreach ($selectedColumns as $col): ?>
+                                    <?php if($col != 'primary_key') {?>
+                                        <th><?= htmlspecialchars($col) ?></th>
+                                    <?php } ?>
+                                <?php endforeach; ?>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;">No incorrect data found for the <?=$columnToHighlight?> <a href="dashboard.php?table_name=<?=$tableName?>">click here </a> to go back
+                            </td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <?php } ?>
                 </div>
              </div>

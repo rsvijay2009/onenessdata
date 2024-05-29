@@ -1,5 +1,7 @@
 
 <?php
+require_once "auth.php";
+check_authentication();
 include_once "database.php";
 include_once "constants/common_constants.php";
 

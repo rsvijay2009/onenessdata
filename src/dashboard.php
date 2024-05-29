@@ -6,6 +6,8 @@ $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $tableName = $_REQUEST["table_name"] ?? "";
+$projectName = $_REQUEST["project"] ?? "";
+
 if (!empty($tableName)) {
     try {
         $stmt = $pdo->prepare("SELECT column_name, data_quality, uniqueness  FROM table_datatypes WHERE table_name = '".$tableName."'");
@@ -34,7 +36,7 @@ include_once "header.php";
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-10">
+        <div class="col-md-10" style="margin-top:50px;">
             <div class="row g-4">
                 <!-- Cards with Charts -->
                 <div class="col-md-4">
@@ -97,7 +99,6 @@ include_once "header.php";
                     </div>
                 </div>
             </div>
-            <!-- <a href="view_table.php?table=<?=$tableName?>"><input type="button" value="View Table" class="view-table" style="padding:5px; margin-left:10px;"></a> -->
             <!-- Table Below Cards -->
             <div style="padding:10px;">
                 <div class="table-responsive">
@@ -164,8 +165,8 @@ const pieChartconfig = {
             const index = chartElement.index;
             const label = data.labels[index];
             const urlMap = {
-                'Incorrect data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&type=incorrect',
-                'Correct data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&type=correct',
+                'Incorrect data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&project=<?=$projectName?>&type=incorrect',
+                'Correct data': '<?=WEBSITE_ROOT_PATH?>view_dataquality.php?table=<?=$tableName?>&project=<?=$projectName?>&type=correct',
             };
             const url = urlMap[label];
             if (url) {

@@ -133,6 +133,7 @@ include_once "header.php";
                     </div>
                 <p>
                     <input type="submit" value="Merge data" name="submit" style="margin:20px; width:120px;">
+                    <a href="home.php" class="btn btn-primary" style="width:10%; height:45px; padding:10px;margin-bottom:4px;margin-left:-15px;">Back</a>
                     <span id="successMsg" class="successMsg"><?= $successMsg ?></span>
                     <span id="errorMsg" class="errorMsg"><?= $errorMsg ?></span>
                 </p>

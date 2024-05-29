@@ -4,12 +4,13 @@ include_once "database.php";
 include_once "utilities/common_utils.php";
 
 $selectedColumns = [];
-$columns   = $_POST["columns"] ?? [];
-$dataTypes = $_POST["datatype"] ?? [];
-$csvFile   = $_POST["file"];
-$projectId = $_POST["project_id"];
-$tableName = $_POST["table_name"];
-$tableId   = 0;
+$columns     = $_POST["columns"] ?? [];
+$dataTypes   = $_POST["datatype"] ?? [];
+$csvFile     = $_POST["file"];
+$projectId   = $_POST["project_id"];
+$tableName   = $_POST["table_name"];
+$projectName = $_POST["project_name"];
+$tableId     = 0;
 
 $filteredArray = array_filter($dataTypes, function ($value) {
     return $value !== null && $value !== false && $value !== "";
@@ -45,7 +46,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 return "`$col` TEXT";
             }
         }, $selectedColumns);
-
+        $tableName = $projectName."_".$tableName;
         $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
@@ -151,5 +152,5 @@ if (($handle = fopen($csvFile, "r")) !== false) {
     echo "No file or columns selected.";
 }
 
-header("Location:dashboard.php?table_name=$tableName");
+header("Location:dashboard.php?table_name=$tableName&project=$projectName");
 ?>

@@ -10,9 +10,9 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
 </div>
 <div class="<?=$sideBarWithDesign?> bg-light">
     <div class="d-flex flex-column flex-shrink-0 p-3" style="height: 100vh;">
-    <a href="<?= WEBSITE_ROOT_PATH ?>" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
+    <a href="<?= WEBSITE_ROOT_PATH ?>home.php" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
             <div class="menu-item">
-                <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>" style="color:#71B6FA; padding-left:13px;">Upload</a>
+                <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>home.php" style="color:#71B6FA; padding-left:13px;">Upload</a>
             </div>
         <form name="sidebarForm" method="post">
             <input type="hidden" name="deleteProjectId" id="deleteProjectId" value="0">
@@ -22,7 +22,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     <span class="d-flex justify-content-between align-items-center">
                         <a class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" href="#<?= $project["name"
                         ] ?>" role="button" aria-expanded="false" style="color:#71B6FA; text-wrap:wrap;">
-                        <?= ucfirst($project["name"] )?> <span class="badge" style="font-weight:bold;font-size:20px;color:black;">+</span></a>
+                        <?= ucfirst($project["name"] )?> <span class="badge" style="font-weight:bold;font-size:20px;color:black;"><?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "-" : "+"?></span></a>
                     </span>
                     <?php
                     $sql ="SELECT id, name FROM tables_list where  project_id = :projectId";
@@ -31,20 +31,20 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     $stmt->execute();
                     $tables = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
-                    <div class="menu collapse" id="<?= $project["name"] ?>">
-                        <?php foreach ($tables as $table) { ?>
+                    <div class="menu collapse <?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "show" : ""?>" id="<?=$project["name"]?>">
+                        <?php foreach ($tables as $table) {
+                            $tblName = str_replace($project["name"]."_", "",$table["name"])
+                            ?>
                             <ul class="nav flex-column p-1">
                                     <li class="nav-item"  draggable="true" ondragstart="drag(event)" style="max-width:215px; word-wrap:break-word;">
-                                        <a href="dashboard.php?table_name=<?=$table["name"]?>" style="text-decoration:none; color:black;padding-left:14px;" role="button"><?= ucfirst(
-                                            $table["name"]
-                                        ) ?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                        <a href="dashboard.php?table_name=<?=$table["name"]?>&project=<?=$project["name"]?>" style="text-decoration:none;padding-left:14px;<?php if(isset($_REQUEST['table_name']) && strtolower($_REQUEST['table_name']) == $table["name"] || isset($_REQUEST['table']) && strtolower($_REQUEST['table']) == $table["name"]) {?> color:#D828DA; font-weight:bold;<?php } else {?>color:black<?php } ?>" role="button"><?=ucfirst($tblName)?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                                     </a>
                                     </li>
                                 </ul>
                         <?php } ?>
                     </div>
                 </div>
-                <div class="collapse" id="<?= $project["name"] ?>">
+                <div class="collapse <?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "show" : ""?>" id="<?=$project["name"]?>">
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link project-delete" onclick="confirmProjectDeletion(<?= $project['id'] ?>, '<?= $project['name'] ?>')"> Delete project</a>

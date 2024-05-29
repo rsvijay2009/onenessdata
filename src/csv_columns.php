@@ -8,6 +8,11 @@ $error = "";
 $tableName = $_REQUEST["table_name"];
 $projectId = $_REQUEST["project_id"];
 
+$projectSql = $pdo->prepare("select name FROM projects where id = $projectId");
+$projectSql->execute();
+$project = $projectSql->fetch(PDO::FETCH_ASSOC);
+$projectName = $project['name'];
+
 try {
     $stmt = $pdo->prepare("select id, name, description FROM datatypes");
     $stmt->execute();
@@ -17,8 +22,8 @@ try {
     die("Could not connect to the database $dbname :" . $e->getMessage());
 }
 
+include_once "sidebar.php";
 include_once "header.php";
-include_once "sidebar.php"
 ?>
 <link rel="stylesheet" href="styles/csv_columns.css">
 </head>
@@ -29,10 +34,11 @@ include_once "sidebar.php"
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-            <div class="col-md-10">
+            <div class="col-md-10" style="margin-top:30px;">
                 <form action="import.php" method="post" class="csv_columns_form">
                     <input type="hidden" name="table_name" value="<?= $tableName ?>">
                     <input type="hidden" name="project_id" value="<?= $projectId ?>">
+                    <input type="hidden" name="project_name" value="<?= $projectName ?>">
                     <div class="table-responsive" style="margin:20px;">
                         <table class="table table-bordered">
                             <thead>
@@ -79,6 +85,7 @@ include_once "sidebar.php"
                             </tbody>
                         </table>
                         <input type="submit" value="Import">
+                        <a href="home.php" class="btn btn-primary link-button">Back</a>
                     </div>
                     <input type="hidden" name="file" value="<?php echo htmlspecialchars($file); ?>">
                 </form>

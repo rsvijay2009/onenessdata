@@ -8,12 +8,13 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $tableName = $_REQUEST['table'] ?? null;
 $dataQualityType = $_REQUEST['type'] ?? null;
+$projectName = $_REQUEST['project'] ?? '';
 
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id')");
+$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name')");
 $columnQuery->execute();
 $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 
@@ -126,7 +127,7 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
             <div style="padding:10px;">
                 <?php if(!empty($data)) { ?>
                     <div class="dropdown" style="display: flex; justify-content: flex-end; margin-top:40px;">
-                        <a href="dashboard.php?table_name=<?=$tableName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                        <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                            Download as
                         </button>

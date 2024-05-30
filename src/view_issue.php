@@ -4,6 +4,7 @@ include_once "sidebar.php";
 
 try {
    $tableName = $_REQUEST['table'];
+   $projectName = $_REQUEST['project'];
     // PDO connection setup
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -57,7 +58,7 @@ include_once "header.php";
                             <?php }?>
                             </tbody>
                         </table>
-                        <a href="dashboard.php?table_name=<?=$tableName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                        <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     </div>
                 </div>
         </div>

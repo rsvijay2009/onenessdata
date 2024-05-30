@@ -34,101 +34,99 @@ VALUES
     ('Alphanumeric', 'Ex: AB12C5 ...'),
     ('Email', 'Ex: name@mail.com ...');
 
-DROP TABLE IF EXISTS `table_datatypes`;
-CREATE TABLE table_datatypes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    table_id INT NOT NULL,
-    table_name VARCHAR(255) NOT NULL,
-    column_name  VARCHAR(255) NOT NULL,
-    datatype_id INT NOT NULL,
-    datatype VARCHAR(255) NOT NULL,
-    data_quality INT NOT NULL DEFAULT 0,
-    uniqueness INT NOT NULL DEFAULT 0,
-    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 DROP TABLE IF EXISTS `temp_table_ids`;
 CREATE TABLE temp_table_ids (
     table_id INT
 );
 
 DROP PROCEDURE IF EXISTS GetDashboardData;
+
 DELIMITER $$
-
-CREATE PROCEDURE `GetDashboardData`()
+CREATE PROCEDURE `GetDashboardData`(IN table_name VARCHAR(64))
 BEGIN
-    DECLARE data_quality_correct_data INT DEFAULT 70;
-    DECLARE data_quality_incorrect_data INT DEFAULT 30;
-    DECLARE text_issue INT DEFAULT 10;
-    DECLARE number_issue INT DEFAULT 20;
-    DECLARE date_issue INT DEFAULT 30;
-    DECLARE alphanumeric_issue INT DEFAULT 40;
-    DECLARE email_issue INT DEFAULT 50;
-    DECLARE duplicate_entries_issue INT DEFAULT 60;
-    DECLARE others_issue INT DEFAULT 70;
-    DECLARE null_issue INT DEFAULT 0;
-    DECLARE overall_correct_data INT DEFAULT 30;
-	DECLARE overall_incorrect_data INT DEFAULT 70;
-    SELECT data_quality_correct_data AS 'data_quality_correct_data', 
-    data_quality_incorrect_data AS 'data_quality_incorrect_data',
-    text_issue AS 'text_issue',
-    number_issue AS 'number_issue',
-    date_issue AS 'date_issue',
-    alphanumeric_issue AS 'alphanumeric_issue',
-    email_issue AS 'email_issue',
-    duplicate_entries_issue AS 'duplicate_entries_issue',
-    others_issue AS 'others_issue',
-    null_issue AS 'null_issue',
-    overall_correct_data AS 'overall_correct_data',
-    overall_incorrect_data AS 'overall_incorrect_data';
-    
-END $$
+    DECLARE data_quality_correct_data INT;
+    DECLARE data_quality_incorrect_data INT;
+    DECLARE text_issue INT;
+    DECLARE number_issue INT;
+    DECLARE date_issue INT;
+    DECLARE alphanumeric_issue INT;
+    DECLARE email_issue INT;
+    DECLARE duplicate_entries_issue INT;
+    DECLARE others_issue INT;
+    DECLARE null_issue INT;
+    DECLARE overall_correct_data INT;
+	DECLARE overall_incorrect_data INT;
+    DECLARE sql_query TEXT;
 
+    -- Construct the dynamic SQL query
+    SET @sql_query = CONCAT('SELECT data_quality_correct_data, data_quality_incorrect_data, text_issue, number_issue, date_issue, alphanumeric_issue, email_issue, duplicate_entries_issue, others_issue, null_issue, overall_correct_data, overall_incorrect_data ', 'INTO @data_quality_correct_data, @data_quality_incorrect_data, @text_issue, @number_issue, @date_issue, @alphanumeric_issue, @email_issue, @duplicate_entries_issue, @others_issue, @null_issue, @overall_correct_data, @overall_incorrect_data ',
+    'FROM ', table_name, ' LIMIT 1');
+
+    -- Prepare and execute the dynamic SQL
+    PREPARE stmt FROM @sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    -- Assign the variables from the prepared statement execution
+    SET data_quality_correct_data = @data_quality_correct_data;
+    SET data_quality_incorrect_data = @data_quality_incorrect_data;
+    SET text_issue = @text_issue;
+    SET number_issue = @number_issue;
+    SET date_issue = @date_issue;
+    SET alphanumeric_issue = @alphanumeric_issue;
+    SET email_issue = @email_issue;
+    SET duplicate_entries_issue = @duplicate_entries_issue;
+    SET others_issue = @others_issue;
+    SET null_issue = @null_issue;
+    SET overall_correct_data = @overall_correct_data;
+	SET overall_incorrect_data = @overall_incorrect_data;
+
+    -- Return the values
+    SELECT data_quality_correct_data AS 'data_quality_correct_data', 
+           data_quality_incorrect_data AS 'data_quality_incorrect_data',
+           text_issue AS 'text_issue',
+           number_issue AS 'number_issue',
+           date_issue AS 'date_issue',
+           alphanumeric_issue AS 'alphanumeric_issue',
+           email_issue AS 'email_issue',
+           duplicate_entries_issue AS 'duplicate_entries_issue',
+           others_issue AS 'others_issue',
+           null_issue AS 'null_issue',
+           overall_correct_data AS 'overall_correct_data',
+           overall_incorrect_data AS 'overall_incorrect_data';
+END $$
 DELIMITER ;
+
+
 
 DROP PROCEDURE IF EXISTS DeleteProjectData;
 DELIMITER $$
 
 CREATE PROCEDURE DeleteProjectData(IN projectId INT)
 BEGIN
-    DECLARE done INT DEFAULT FALSE;
-    DECLARE _tableName VARCHAR(255);
-    DECLARE _tableId INT;
-    DECLARE cur CURSOR FOR SELECT id, name FROM tables_list WHERE project_id = projectId;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-    
-    -- Cursor to fetch table names and IDs
-    OPEN cur;
-    
-    read_loop: LOOP
-        FETCH cur INTO _tableId, _tableName;
-        IF done THEN
-            LEAVE read_loop;
-        END IF;
-        
-        -- Check if table name is not null or empty
-        IF _tableName IS NOT NULL AND _tableName <> '' THEN
-            -- Dynamically drop table if it exists
-            SET @s = CONCAT('DROP TABLE IF EXISTS ', _tableName);
-            PREPARE stmt FROM @s;
-            EXECUTE stmt;
-            DEALLOCATE PREPARE stmt;
-            
-            -- Collect table IDs for later use
-            INSERT INTO temp_table_ids VALUES (_tableId);
-        END IF;
-    END LOOP;
-    
-    CLOSE cur;
-    
-    -- Delete from tables_list where project_id matches
-    DELETE FROM tables_list WHERE project_id = projectId;
-    
-    -- Check if there are table IDs collected, then delete from table_datatypes
-    IF (SELECT COUNT(*) FROM temp_table_ids) > 0 THEN
-        DELETE FROM table_datatypes WHERE table_id IN (SELECT table_id FROM temp_table_ids);
+    DECLARE project_name TEXT;
+    DECLARE projectNameWithUnderscore VARCHAR(255);
+
+    -- Fetch the project name
+    SELECT name INTO projectName FROM projects WHERE id = projectId;
+
+    SET projectNameWithUnderscore = CONCAT(projectName, '_%');
+
+    -- Delete all tables related to the project
+    -- Step 1: Generate the DROP TABLE statements
+    SET SESSION group_concat_max_len = 1000000;
+
+    SET @drop_statement = (
+        SELECT GROUP_CONCAT(CONCAT('DROP TABLE IF EXISTS `', table_name, '`') SEPARATOR '; ')
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE() AND table_name LIKE projectNameWithUnderscore
+    );
+
+    -- Step 2: Prepare and execute the DROP TABLE statements if any tables were found
+    IF @drop_statement IS NOT NULL AND @drop_statement != '' THEN
+        PREPARE stmt FROM @drop_statement;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
     END IF;
     
     -- Delete from projects where id matches

@@ -10,17 +10,20 @@ $projectName = $_REQUEST["project"] ?? "";
 
 if (!empty($tableName)) {
     try {
-        $stmt = $pdo->prepare("SELECT column_name, data_quality, uniqueness  FROM table_datatypes WHERE table_name = '".$tableName."'");
+        $tbl = str_replace($projectName, "", $tableName);
+        $tableDataTypes = $projectName.$tbl."_datatype";
+        $stmt = $pdo->prepare("SELECT column_name, data_quality, uniqueness FROM $tableDataTypes WHERE table_name = '".$tableName."'");
         $stmt->execute();
         $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
 
-        $stmt = $pdo->prepare("CALL GetDashboardData()");
+        $dashboardDataTableName = $tableName.'_dashboard';
+        $stmt = $pdo->prepare("CALL GetDashboardData('$dashboardDataTableName')");
         $stmt->execute();
         $spDashboardData = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
     } catch (PDOException $e) {
-        die("Something went wrong" . $e->getMessage());
+        die("Something went wrong" . $e->getMessage().$e->getLine());
     }
 }
 
@@ -111,20 +114,20 @@ include_once "header.php";
                                 </tr>
                             </thead>
                         <tbody>
-                        <?php foreach ($columns as $column) { ?>
+                        <?php foreach ($columns as $column) {?>
                                     <tr>
                                     <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
                                     <td>
                                         <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column["data_quality"]?>%;"></div>
-                                            <div class="sticky-bar-1" style="background-color: green; width: 10%; border-radius:3px;font-size:10px;text-align:center;"><?= $column["data_quality"]?>%</div>
+                                            <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column['data_quality'] ?? 0;?>%;"></div>
+                                            <div class="sticky-bar-1" style="background-color: green; width: 10%; border-radius:3px;font-size:10px;text-align:center;"><?= $column['data_quality'] ?? 0;?>%</div>
                                         </div>
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $column["uniqueness"]?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"]?>%</span></div>
+                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $column["uniqueness"] ?? 0;?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"] ?? 0;?>%</span></div>
 
-                                            <?php if($column["uniqueness"] < 100) { ?>
+                                            <?php if($column["uniqueness"] ?? 0 < 100) { ?>
                                                 <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
                                             <?php } else { ?>
                                                 <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>
@@ -212,7 +215,7 @@ const pieChartconfig = {
                 let sum = 0;
                 let dataArr = ctx.chart.data.datasets[0].data;
                 dataArr.map(data => sum += data);
-                return (value / sum * 100)+ '%';
+                return (value)+ '%';
             }
         },
         tooltip: {
@@ -269,7 +272,7 @@ var barChart = new Chart(ctx2, {
                     let sum = 0;
                     let dataArr = ctx.chart.data.datasets[0].data;
                     dataArr.map(data => sum += data);
-                    return (value / sum * 100);
+                    return (value);
                 }
             },
             tooltip: {

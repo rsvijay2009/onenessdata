@@ -201,3 +201,34 @@ function createDynamicTableForDashboard($projectName, $tableName, $pdo)
         return false;
     }
 }
+
+function createDynamicTableForDataVerification($tableName, $pdo)
+{
+    try {
+        $tableName = $tableName."_data_verification";
+
+        $sql = "CREATE TABLE $tableName (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            project_id INT NOT NULL,
+            table_id INT NOT NULL,
+            table_name VARCHAR(255) NOT NULL,
+            column_name  VARCHAR(255) NOT NULL,
+            master_primary_key INT NOT NULL,
+            ignore_flag INT NOT NULL DEFAULT 0,
+            status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )";
+
+        $pdo->exec($sql);
+
+        return true;
+    } catch(Exception $e) {
+        return false;
+    }
+}
+
+function calculateDataQualityStatPercentage($oveallCount, $value)
+{
+    return ($value / 100 ) * 100;
+}

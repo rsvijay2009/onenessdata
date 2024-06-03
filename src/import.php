@@ -53,6 +53,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $isTableCreated = true;
     } catch (PDOException $e) {
         echo $e->getMessage();
+        echo $e->getLine();
         $isTableCreated = false;
     }
 
@@ -95,10 +96,12 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $recordsCount = $stmt->fetchColumn();
 
         if($recordsCount == 0) {
-            include_once("utilities/common_utils.php");
             deleteAllTableRelatedData($tableId, $pdo);
             $tableId = null;
         }
+
+        //create dynamic table for data verification
+        createDynamicTableForDataVerification($tableName, $pdo);
     }
     //Insert the table datatype details
     if ($tableId) {

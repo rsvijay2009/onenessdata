@@ -8,7 +8,14 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $tableName = $_REQUEST["table_name"] ?? "";
 $projectName = $_REQUEST["project"] ?? "";
 
-if (!empty($tableName)) {
+
+try {
+    $isTableExists = $pdo->query("SELECT 1 FROM $tableName LIMIT 1");
+} catch (PDOException $e) {
+    $isTableExists =  false;
+}
+$columns =[];
+if (!empty($tableName) && $isTableExists) {
     try {
         $tbl = str_replace($projectName, "", $tableName);
         $tableDataTypes = $projectName.$tbl."_datatype";

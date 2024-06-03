@@ -5,12 +5,12 @@ include_once "sidebar.php";
 try {
    $tableName = $_REQUEST['table'];
    $projectName = $_REQUEST['project'];
+   $dataVerificationTableName = $tableName.'_data_verification';
     // PDO connection setup
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     $stmt = $pdo->prepare(
-        "SELECT  column_name, SUM(CASE WHEN ignore_flag = 0 THEN 1 ELSE 0 END) AS count FROM data_verification  where table_name = '$tableName' GROUP BY column_name ORDER BY column_name"
+        "SELECT  column_name, SUM(CASE WHEN ignore_flag = 0 THEN 1 ELSE 0 END) AS count FROM `$dataVerificationTableName`  where table_name = '$tableName' GROUP BY column_name ORDER BY column_name"
     );
     $stmt->execute();
     $issues = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -43,7 +43,7 @@ include_once "header.php";
                                     <tr>
                                         <td>
                                             <?php if($issue['count'] > 0) {?>
-                                                <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
+                                                <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
                                             <?php } else { ?>
                                                 <?=$issue['column_name']?>
                                             <?php } ?>

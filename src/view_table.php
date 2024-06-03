@@ -38,9 +38,10 @@ try {
             if(!empty($selectedColumns)) {
                 $queryColumns = implode(', ', array_map(function($col) use($tableName) { return "`$tableName`.`$col`"; }, $selectedColumns));
             }
+            $dataVerificationTableName = $tableName.'_data_verification';
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
-            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
-            ON `$tableName`.primary_key =  data_verification.`master_primary_key` WHERE data_verification.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
+            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `$dataVerificationTableName`
+            ON `$tableName`.primary_key =  `$dataVerificationTableName`.`master_primary_key` WHERE `$dataVerificationTableName`.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
             $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
             $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -123,7 +124,7 @@ include_once "header.php";
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                    <a href="dashboard.php?table_name=<?=$tableName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                    <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     <?php } else {?>
                         <table class="table">
                         <thead>

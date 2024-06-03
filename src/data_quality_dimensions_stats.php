@@ -1,6 +1,7 @@
 <?php
 include_once "database.php";
 include_once "sidebar.php";
+include_once "utilities/common_utils.php";
 
 $columnName = $_REQUEST['column'] ?? null;
 $tableName = $_REQUEST['table'] ?? null;
@@ -8,6 +9,11 @@ $projectName = $_REQUEST['project'] ?? '';
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+//Get row count
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+$stmt->execute();
+$rowCount = $stmt->fetchColumn();
 
 $sql = $pdo->prepare("SELECT  $columnName FROM `$tableName`");
 $sql->execute();
@@ -82,13 +88,15 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                                                         <tr>
                                                             <th>Value</th>
                                                             <th>Count</th>
+                                                            <th>Percentage</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach($top5Data as $top5) {?>
                                                             <tr>
-                                                                <td><?=$top5[$columnName] ?? 'NULL'?></td>
+                                                                <td><a href="view_stats_data.php?table=<?=$tableName?>&project=<?=$projectName?>&column=<?=$columnName?>&col_value=<?=$top5[$columnName]?>" style="text-decoration:none;"><?=$top5[$columnName] ?? 'NULL'?></a></td>
                                                                 <td><?=$top5['count']?></td>
+                                                                <td><?=calculateDataQualityStatPercentage($rowCount, $top5['count'])?>%</td>
                                                             </tr>
                                                         <?php } ?>
                                                     </tbody>
@@ -115,13 +123,15 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                                                         <tr>
                                                             <th>Value</th>
                                                             <th>Count</th>
+                                                            <th>Percentage</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach($bottom5Data as $bottom5) {?>
                                                             <tr>
-                                                                <td><?=$bottom5[$columnName] ?? 'NULL'?></td>
+                                                                <td><a href="view_stats_data.php?table=<?=$tableName?>&project=<?=$projectName?>&column=<?=$columnName?>&col_value=<?=$bottom5[$columnName]?>" style="text-decoration:none;"><?=$bottom5[$columnName] ?? 'NULL'?></a></td>
                                                                 <td><?=$bottom5['count']?></td>
+                                                                <td><?=calculateDataQualityStatPercentage($rowCount, $bottom5['count'])?>%</td>
                                                             </tr>
                                                         <?php } ?>
                                                     </tbody>

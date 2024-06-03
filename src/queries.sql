@@ -100,57 +100,83 @@ DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS DeleteProjectData;
+
 DELIMITER $$
 
 CREATE PROCEDURE DeleteProjectData(IN projectId INT)
 BEGIN
-    DECLARE project_name TEXT;
+    DECLARE projectName VARCHAR(255);
+    DECLARE done INT DEFAULT 0;
+    DECLARE tableName VARCHAR(255);
     DECLARE projectNameWithUnderscore VARCHAR(255);
+    DECLARE cur CURSOR FOR
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE() AND table_name LIKE CONCAT(projectNameWithUnderscore, '%');
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-    -- Fetch the project name
+    -- Retrieve the project name from the projects table
     SELECT name INTO projectName FROM projects WHERE id = projectId;
 
     SET projectNameWithUnderscore = CONCAT(projectName, '_%');
+    -- Check if project name is found
+    IF projectName IS NOT NULL THEN
+        -- Open the cursor to find all tables starting with the project name
+        OPEN cur;
+        -- Loop through all the tables and drop them
+        read_loop: LOOP
+            FETCH cur INTO tableName;
+            IF done THEN
+                LEAVE read_loop;
+            END IF;
+            SET @dropStatement = CONCAT('DROP TABLE ', tableName);
+            PREPARE stmt FROM @dropStatement;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+        END LOOP;
 
-    -- Delete all tables related to the project
-    -- Step 1: Generate the DROP TABLE statements
-    SET SESSION group_concat_max_len = 1000000;
-
-    SET @drop_statement = (
-        SELECT GROUP_CONCAT(CONCAT('DROP TABLE IF EXISTS `', table_name, '`') SEPARATOR '; ')
-        FROM information_schema.tables
-        WHERE table_schema = DATABASE() AND table_name LIKE projectNameWithUnderscore
-    );
-
-    -- Step 2: Prepare and execute the DROP TABLE statements if any tables were found
-    IF @drop_statement IS NOT NULL AND @drop_statement != '' THEN
-        PREPARE stmt FROM @drop_statement;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt;
+        CLOSE cur;
     END IF;
-    
-    -- Delete from projects where id matches
+
+     -- Delete from projects where id matches
     DELETE FROM projects WHERE id = projectId;
 
-    -- Delete related data from data_verification table
-    DELETE FROM data_verification WHERE project_id = projectId;
-    
+      -- Delete from tables_list where name matches
+    DELETE FROM tables_list WHERE project_id = projectId;
+
     -- Optionally, clean up temporary storage for IDs
     TRUNCATE TABLE temp_table_ids;
-END$$
+END $$
 
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS DropAndCleanUpTable;
-DELIMITER $$
 
 CREATE PROCEDURE DropAndCleanUpTable(IN tableId INT)
 BEGIN
     DECLARE _tableName VARCHAR(255);
+    DECLARE _dataTypeTableName VARCHAR(255);
+    DECLARE _dataVerificationTableName VARCHAR(255);
+    DECLARE _dashboardTableName VARCHAR(255);
+    DECLARE _dropQuery VARCHAR(500);
+
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Capture error and log it
+        GET DIAGNOSTICS CONDITION 1
+            @p1 = RETURNED_SQLSTATE,
+            @p2 = MESSAGE_TEXT;
+        INSERT INTO error_log (error_time, error_message)
+        VALUES (NOW(), CONCAT('SQLSTATE: ', @p1, ', Error: ', @p2));
+    END;
     
     -- Select the table name from tables_list
     SELECT name INTO _tableName FROM tables_list WHERE id = tableId LIMIT 1;
     
+    -- Set the dynamic table names
+    SET _dataTypeTableName = CONCAT(_tableName, '_datatype');
+    SET _dataVerificationTableName = CONCAT(_tableName, '_data_verification');
+    SET _dashboardTableName = CONCAT(_tableName, '_dashboard');
+
     -- Check if the table name is not empty and drop the table if it exists
     IF _tableName IS NOT NULL AND _tableName <> '' THEN
         SET @dropQuery = CONCAT('DROP TABLE IF EXISTS ', _tableName);
@@ -159,14 +185,32 @@ BEGIN
         DEALLOCATE PREPARE stmt;
     END IF;
     
+    -- Drop _dataTypeTableName if it exists
+    IF _dataTypeTableName IS NOT NULL AND _dataTypeTableName <> '' THEN
+        SET @dropQuery = CONCAT('DROP TABLE IF EXISTS ', _dataTypeTableName);
+        PREPARE stmt FROM @dropQuery;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+
+    -- Drop _dataVerificationTableName if it exists
+    IF _dataVerificationTableName IS NOT NULL AND _dataVerificationTableName <> '' THEN
+        SET @dropQuery = CONCAT('DROP TABLE IF EXISTS ', _dataVerificationTableName);
+        PREPARE stmt FROM @dropQuery;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+
+    -- Drop _dashboardTableName if it exists
+    IF _dashboardTableName IS NOT NULL AND _dashboardTableName <> '' THEN
+        SET @dropQuery = CONCAT('DROP TABLE IF EXISTS ', _dashboardTableName);
+        PREPARE stmt FROM @dropQuery;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+
     -- Delete the entry from tables_list
     DELETE FROM tables_list WHERE id = tableId;
-    
-    -- Delete related data from table_datatypes
-    DELETE FROM table_datatypes WHERE table_id = tableId;
-
-    -- Delete related data from data_verification table
-    DELETE FROM data_verification WHERE table_id = tableId;
 END$$
 
 DELIMITER ;

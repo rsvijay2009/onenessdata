@@ -4,13 +4,15 @@ include_once "sidebar.php";
 
 $tableName = $_REQUEST['table'] ?? null;
 $columnName = $_REQUEST['column'] ?? null;
+$projectName = $_REQUEST['project'] ?? null;
 $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
+$dataVerificationTableName = $tableName.'_data_verification';
 
 if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
     $issueId = $_POST['issueId'];
-    $query = "UPDATE data_verification SET ignore_flag = 1 WHERE id = $issueId";
+    $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE id = $issueId";
     $updateQuery = $pdo->prepare($query);
     $updateQuery->execute();
 }
@@ -44,10 +46,10 @@ try {
             if(!empty($selectedColumns)) {
                 $queryColumns = implode(', ', array_map(function($col) use($tableName) { return "`$tableName`.`$col`"; }, $selectedColumns));
             }
-            $queryColumns = $queryColumns.', `data_verification`.`id` as dvId';
+            $queryColumns = $queryColumns.', '.$dataVerificationTableName.'.id as dvId';
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
-            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN `data_verification`
-            ON `$tableName`.primary_key =  data_verification.`master_primary_key` WHERE data_verification.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
+            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN $dataVerificationTableName
+            ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
 
             $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
@@ -70,8 +72,8 @@ include_once "header.php";
         <!-- Content Area -->
         <div class="col-md-10">
             <div style="padding:10px;">
-            <?php if(!empty($selectedColumns) && !empty($data)) { ?>
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>
+            <?php if(!empty($selectedColumns) && !empty($data)) { ?>
                 <div class="dropdown" style="display: flex; justify-content: flex-end;">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                         Select Columns
@@ -136,9 +138,22 @@ include_once "header.php";
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     <?php } else {?>
-                        <div style="text-align:center; color:red; font-size:20px;">No incorrect data found for the <?=$columnToHighlight?>
-                    column </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>column name</th>
+                                    <th>actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;font-size:20px;">No incorrect data found for the <?=$columnToHighlight?>
+                    column  <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>">click here </a> to go back</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     <?php } ?>
                 </div>
              </div>
@@ -194,7 +209,7 @@ $(document).ready(function() {
         selectedColumns.splice(selectedColumnIndex, 1);
         selectedColumns.unshift(selectedColumnName);
         let queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
-        queryString = queryString + '&table=<?=$_REQUEST['table']?>';
+        queryString = queryString + '&table=<?=$_REQUEST['table']?>&project=<?=$_REQUEST['project']?>';
 
         window.location.search = queryString;
     });
@@ -210,7 +225,7 @@ $(document).ready(function() {
         selectedColumns.splice(selectedColumnIndex, 1);
         selectedColumns.unshift(selectedColumnName);
         let queryString = selectedColumns.map(col => `column[]=${encodeURIComponent(col)}`).join('&');
-        queryString = queryString + '&table=<?=$_REQUEST['table']?>';
+        queryString = queryString + '&table=<?=$_REQUEST['table']?>&project=<?=$_REQUEST['project']?>';
         window.location.search = queryString;
     });
 });

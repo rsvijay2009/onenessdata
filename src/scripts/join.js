@@ -11,12 +11,15 @@ card.addEventListener('click', () => {
 const joinTable1 = document.getElementById('joinTable1');
 const joinTable2 = document.getElementById('joinTable2');
 const button = document.getElementById('joinBtn');
+const joinRelation = document.getElementById('joinRelation');
 
 function checkDropdownValues() {
     if (joinTable1.value === "" || joinTable2.value === "") {
         button.style.display = 'none';
+        joinRelation.style.display = 'none';
     } else {
         button.style.display = 'block';
+        joinRelation.style.display = 'block';
     }
 }
 

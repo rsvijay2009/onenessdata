@@ -150,7 +150,7 @@ END $$
 
 DELIMITER ;
 
-
+DELIMITER $$
 CREATE PROCEDURE DropAndCleanUpTable(IN tableId INT)
 BEGIN
     DECLARE _tableName VARCHAR(255);

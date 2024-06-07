@@ -8,17 +8,17 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $tableName = $_REQUEST["table_name"] ?? "";
 $projectName = $_REQUEST["project"] ?? "";
 
-
 try {
-    $isTableExists = $pdo->query("SELECT 1 FROM $tableName LIMIT 1");
+    $sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_SCHEMA = '$dbname' AND TABLE_NAME = '$tableName'";
+    $result = $pdo->query($sql);
+    $isTableExists = $result->fetchColumn() > 0 ? true : false;
 } catch (PDOException $e) {
     $isTableExists =  false;
 }
 $columns =[];
 if (!empty($tableName) && $isTableExists) {
     try {
-        $tbl = str_replace($projectName, "", $tableName);
-        $tableDataTypes = $projectName.$tbl."_datatype";
+        $tableDataTypes = $tableName."_datatype";
         $stmt = $pdo->prepare("SELECT column_name, data_quality, uniqueness FROM $tableDataTypes WHERE table_name = '".$tableName."'");
         $stmt->execute();
         $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);

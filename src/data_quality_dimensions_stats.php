@@ -15,6 +15,13 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
 $stmt->execute();
 $rowCount = $stmt->fetchColumn();
 
+$columns = getColumnNames($pdo, $tableName);
+$minMaxKey = 'primary_key';
+
+if (in_array('id', $columns)) {
+    $minMaxKey = 'id';
+}
+
 $sql = $pdo->prepare("SELECT  $columnName FROM `$tableName`");
 $sql->execute();
 $data = $sql->fetchAll(PDO::FETCH_ASSOC);
@@ -22,7 +29,7 @@ $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 $sqlForTop5Stat = $pdo->prepare("
 SELECT  $columnName, count
 FROM (
-    SELECT $columnName, COUNT(*) AS count, MIN(primary_key) AS max_primary_key
+    SELECT $columnName, COUNT(*) AS count, MIN($minMaxKey) AS max_primary_key
     FROM $tableName
     GROUP BY $columnName
 ) AS subquery
@@ -34,7 +41,7 @@ $top5Data = $sqlForTop5Stat->fetchAll(PDO::FETCH_ASSOC);
 $sqlForBottom5Stat = $pdo->prepare("
 SELECT  $columnName, count
 FROM (
-    SELECT $columnName, COUNT(*) AS count, MIN(primary_key) AS max_primary_key
+    SELECT $columnName, COUNT(*) AS count, MIN($minMaxKey) AS max_primary_key
     FROM $tableName
     GROUP BY $columnName
 ) AS subquery

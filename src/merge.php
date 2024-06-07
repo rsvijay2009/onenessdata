@@ -2,6 +2,7 @@
 
 include_once "database.php";
 include_once "sidebar.php";
+include_once "utilities/common_utils.php";
 
 $errorMsg = "";
 $successMsg = "";
@@ -71,20 +72,29 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                         $stmt = $pdo->prepare("UPDATE $newTableName SET table_id =  $mergedtableId");
                         $stmt->execute();
 
+                        $isDataTypeTableCreated = createDynamicTableTypes($newTableName.'_datatype', $pdo);
 
-                        //Insert the datatypes of merged data into table_datatypes table
-                        if(count($columnsArr) > 0) {
-                            foreach ($columnsArr as $value) {
-                                $tableName =  $value['table_name'];
+                        if($isDataTypeTableCreated) {
+                            //Get the first table datatypes
+                            $firstTableNameDatatype = $firstTableName.'_datatype';
+                            $dashBoardTableName = $newTableName."_dashboard";
+                            $selectedFirstTable = "SELECT * FROM $firstTableNameDatatype";
+                            $stmt = $pdo->query($selectedFirstTable);
+                            $selectedFirstTableRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                // SQL query to copy data and insert into the same table with modified table names
-                                $sql = "INSERT INTO table_datatypes (table_name, table_id, column_name, datatype_id, datatype, data_quality, uniqueness)
-                                SELECT '$newTableName' AS table_name, $mergedtableId AS table_id, column_name, datatype_id, datatype, data_quality, uniqueness
-                                FROM table_datatypes WHERE table_name = '$tableName'";
+                            insertIntoDynamicDatatypeTable($newTableName, $selectedFirstTableRows, $pdo);
+                            //create dynamic table to store dashboard data
+                            createDynamicTableForDashboard($dashBoardTableName, $pdo);
+                            insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);
 
-                                $stmt = $pdo->prepare($sql);
-                                $stmt->execute();
-                            }
+                            //Add auto increment id to show the top and bottom 5 stats of data quality dimensions
+                            // Step 1: Add a new column
+                            $addColumnSql = "ALTER TABLE $newTableName ADD COLUMN id INT";
+                            $pdo->exec($addColumnSql);
+
+                            // Step 2: Set the new column as primary key and auto-increment
+                            $modifyColumnSql = "ALTER TABLE $newTableName MODIFY COLUMN id INT AUTO_INCREMENT PRIMARY KEY NOT NULL";
+                            $pdo->exec($modifyColumnSql);
                         }
                     }
                 }

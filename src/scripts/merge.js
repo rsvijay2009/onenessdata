@@ -10,18 +10,22 @@ if(successMsg != '') {
 function allowDrop(ev) {
     ev.preventDefault();
 }
-function drag(ev) {
+function drag(ev, element) {
+    const orgTableName = element.querySelector('#orgTableName').innerText;
     ev.dataTransfer.setData("text", ev.target.innerText);
+    ev.dataTransfer.setData("orgTableName", orgTableName);
 }
 var droppedData = [null, null, null];
-
+var droppedTables = [null, null, null];
 function updateDroppedDataList() {
     var dataList = droppedData.filter(data => data !== null).join(", ").toLowerCase();
-    document.getElementById('selected_tables').value = dataList;
+    var tablesList = droppedTables.filter(data => data !== null).join(", ").toLowerCase();
+    document.getElementById('selected_tables').value = tablesList;
 }
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text").trim();
+    var tables = ev.dataTransfer.getData("orgTableName").trim();
     var cardContainer = ev.target.classList.contains('card') ? ev.target : ev.target.closest('.card');
     var cardIndex = Array.from(document.querySelectorAll('.card')).indexOf(cardContainer);
     if (droppedData.includes(data) && droppedData[cardIndex] !== data) {
@@ -29,6 +33,7 @@ function drop(ev) {
         return;
     }
     droppedData[cardIndex] = data;
+    droppedTables[cardIndex] = tables;
     updateDroppedDataList();
 
     cardContainer.innerHTML = '<p>' + data + '</p>';

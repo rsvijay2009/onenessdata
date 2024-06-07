@@ -32,59 +32,38 @@ $tables = $sql->fetchAll(PDO::FETCH_COLUMN);
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <div class="col-md-10">
-            <form action="merge.php" method="post">
-                    <input type="hidden" id="selected_tables" name="selected_tables" value="">
-                    <!-- <input type="hidden" id="errMsg" name="errMsg" value=<?= $errorMsg ?>>
-                    <input type="hidden" id="successMsg" name="successMsg" value=<?= $successMsg ?>> -->
-
+            <form action="viewjoin.php" method="post">
+                <input type="hidden" name="joinType" id="joinType" value="">
                     <div class="row g-4">
                         <div class="col-md-3">
                             <div class="card join-card" style="cursor:pointer;">
                                 <div class="plus-icon"><img src="images/left-join.png" class="join-img-width"></div>
                                 <div class="card-body"></div>
+                                <span style="font-weight:bold;margin-bottom:35px;" class="joinTypeClass">LEFT JOIN</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card join-card">
                                 <div class="plus-icon"><img src="images/right-join.png" class="join-img-width"></div>
                                 <div class="card-body"></div>
+                                <span style="font-weight:bold;margin-bottom:35px;" class="joinTypeClass">RIGHT JOIN</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card join-card">
                                 <div class="plus-icon"><img src="images/full-join.png" class="join-img-width"></div>
                                 <div class="card-body"></div>
+                                <span style="font-weight:bold;margin-bottom:35px;" class="joinTypeClass">FULL JOIN</span>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card join-card">
                                 <div class="plus-icon"><img src="images/inner-join.png" class="join-img-width"></div>
                                 <div class="card-body"></div>
+                                <span style="font-weight:bold;margin-bottom:35px;" class="joinTypeClass">INNER JOIN</span>
                             </div>
                         </div>
                     </div>
-                    <div id="joinSection" style="display:none;">
-                        <p style="margin-left:20px; font-weight:bold; font-size:18px;">Choose tables to join</p>
-                        <div style="display:flex;">
-                            <div  style="width:30%;margin-left:20px;">
-                                <select class='form-select' id='joinTable1' name='joinTable1' style="margin-right:20px;">
-                                    <option value=''>Choose table to join</option>
-                                    <?php foreach($tables as $table) {?>
-                                        <option value='<?=$table['name']?>'><?=$table['name']?></option>
-                                    <?php }?>
-                                </select>
-                            </div>
-                            <div style="width:30%;margin-left:20px;">
-                                <select class='form-select' id='joinTable2' name='joinTable2' style="margin-right:20px;">
-                                    <option value=''>Choose table to join</option>
-                                    <?php foreach($tables as $table) {?>
-                                        <option value='<?=$table['name']?>'><?=$table['name']?></option>
-                                    <?php }?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
                     <div id="joinSection" style="display:none;">
                         <p style="margin-left:20px; font-weight:bold; font-size:18px;">Choose tables to join</p>
                         <div style="display:flex;">
@@ -111,52 +90,12 @@ $tables = $sql->fetchAll(PDO::FETCH_COLUMN);
                         </div>
                         <div id="joinTableColumns2" class="dropdown" style="display: flex; justify-content: flex-start;margin-left:12px;">
                         </div>
-
-                        <div class="dropdown" style="display: flex; justify-content: flex-start; display:block;" id="joinRelation">
-                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="margin-top:20px; margin-left:20px; width:100%; color:#000; border: 1px solid #c9c5c5;">
-                            <span style="margin-right: 217px;"> Select Relationship</span>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" style="width:100%;">
-                            <h6 class="dropdown-header">Dropdown header</h6>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-
-                                <h6 class="dropdown-header">Dropdown header</h6>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                    <input class="form-check-input column-checkbox" type="checkbox" name="column[]" value="" id="">
-                                    <label class="form-check-label" for="checkbox">Test 1</label>
-                                    </a>
-                                </li>
-                            </ul>
+                    </div>
+                    <!-- Relationship drop down -->
+                    <div style="display:flex;">
+                        <div id="table1RelationShip" class="dropdown" style="display: flex; justify-content: flex-start;display:none">
+                        </div>
+                        <div id="table2RelationShip" class="dropdown" style="display: flex; justify-content: flex-start;margin-left:12px;display:none">
                         </div>
                     </div>
                     <p>
@@ -173,16 +112,21 @@ $tables = $sql->fetchAll(PDO::FETCH_COLUMN);
 
 <script>
 $(document).ready(function(){
-    $('#joinTable1').change(function(e){
+    $('#joinTable1').change(function(e) {
         const tableName = e.target.value;
         $.ajax({
             type: "POST",
             url: "load_join_tables.php", // Replace with your PHP page URL
             data: {
-                tableName: tableName
+                tableName: tableName,
+                selectBoxId: 'joinDropdown1',
+                selectBoxName: 'joinTable1Columns'
             },
             success: function(response) {
-                $("#joinTableColumns1").html(response);
+                const result = response.split("||");
+                $("#joinTableColumns1").html(result[0]);
+                $("#table1RelationShip").html(result[1]);
+                $("#table1RelationShip").show();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log("Something went wrong");
@@ -190,16 +134,21 @@ $(document).ready(function(){
         });
     });
 
-    $('#joinTable2').change(function(e){
+    $('#joinTable2').change(function(e) {
         const tableName = e.target.value;
         $.ajax({
             type: "POST",
             url: "load_join_tables.php", // Replace with your PHP page URL
             data: {
-                tableName: tableName
+                tableName: tableName,
+                selectBoxId: 'joinDropdown2',
+                selectBoxName: 'joinTable2Columns'
             },
             success: function(response) {
-                $("#joinTableColumns2").html(response);
+                const result = response.split("||");
+                $("#joinTableColumns2").html(result[0]);
+                $("#table2RelationShip").html(result[1]);
+                $("#table2RelationShip").show();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log("Something went wrong");

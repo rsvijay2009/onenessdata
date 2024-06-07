@@ -15,6 +15,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                 <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>home.php" style="color:#71B6FA; padding-left:13px;">Upload</a>
             </div>
         <form name="sidebarForm" method="post">
+            <input type="hidden" name="formName" value="sidebarForm">
             <input type="hidden" name="deleteProjectId" id="deleteProjectId" value="0">
             <input type="hidden" name="deleteTableId" id="deleteTableId" value="0">
             <?php foreach ($projects as $project) { ?>
@@ -36,8 +37,9 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                             $tblName = str_replace($project["name"]."_", "",$table["name"])
                             ?>
                             <ul class="nav flex-column p-1">
-                                    <li class="nav-item"  draggable="true" ondragstart="drag(event)" style="max-width:215px; word-wrap:break-word;">
+                                    <li class="nav-item"  draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
                                         <a href="dashboard.php?table_name=<?=$table["name"]?>&project=<?=$project["name"]?>" style="text-decoration:none;padding-left:14px;<?php if(isset($_REQUEST['table_name']) && strtolower($_REQUEST['table_name']) == $table["name"] || isset($_REQUEST['table']) && strtolower($_REQUEST['table']) == $table["name"]) {?> color:#D828DA; font-weight:bold;<?php } else {?>color:black<?php } ?>" role="button"><?=ucfirst($tblName)?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                        <span id="orgTableName" style="display:none;"><?=$table['name']?></span>
                                     </a>
                                     </li>
                                 </ul>
@@ -54,6 +56,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
             <?php } ?>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="merge.php">Merge</a>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="join.php">Join</a>
+            <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="reconcile.php">Reconcile</a>
         </form>
     </div>
 </div>

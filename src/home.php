@@ -1,15 +1,23 @@
 <?php
 include_once "sidebar.php";
 $error = "";
+$userNotificationMsg = "";
+$notificationClassName = "";
 $requestErr = $_REQUEST["error"] ?? "";
+$requestSuccessMsg = $_REQUEST["msg"] ?? "";
 
 if ($requestErr == "table") {
     $error = "Table name already exist. please try some other name";
 } elseif ($requestErr == "project") {
     $error = "Project name already exist. please try some other name";
 }
-
-
+if($requestSuccessMsg == "table") {
+    $userNotificationMsg = 'Table deleted successfully';
+    $notificationClassName = 'notification-success-banner';
+} else if($requestSuccessMsg == "project") {
+    $userNotificationMsg = 'Project deleted successfully';
+    $notificationClassName = 'notification-success-banner';
+}
 include_once "header.php";
 ?>
 <link rel="stylesheet" href="styles/index.css">
@@ -22,8 +30,8 @@ include_once "header.php";
         
         <div class="col-md-4" style="margin:10px; padding:30px">
         <?php if (!empty($error)) { ?>
-            <p class="errorMsg" id="errorMsg" style="color:red;padding-bottom:10px;"><?= $error ?></p>
-          <?php } ?>
+            <p class="errorMsg" id="errorMsg" style="color:red;padding-bottom:10px;"><?=$error?></p>
+        <?php } ?>
         <form action="upload.php" method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="projectName" class="form-label">Project Name</label>

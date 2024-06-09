@@ -72,7 +72,7 @@ include_once "header.php";
                                 <?php } ?>
                             </tbody>
                         </table>
-                        <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                        <a href="join.php" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     </div>
                 </div>
         </div>

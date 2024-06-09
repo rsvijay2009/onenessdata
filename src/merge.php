@@ -95,6 +95,9 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                             // Step 2: Set the new column as primary key and auto-increment
                             $modifyColumnSql = "ALTER TABLE $newTableName MODIFY COLUMN id INT AUTO_INCREMENT PRIMARY KEY NOT NULL";
                             $pdo->exec($modifyColumnSql);
+
+                            //Create data_verification table for merged tables
+                            createDynamicTableForDataVerification($newTableName, $pdo);
                         }
                     }
                 }

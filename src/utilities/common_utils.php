@@ -285,7 +285,8 @@ function insertIntoDynamicDashboardTable($tableName, $pdo)
     $stmt->execute();
 }
 
-function getColumnNames($pdo, $table) {
+function getColumnNames($pdo, $table)
+{
     $stmt = $pdo->query("DESCRIBE $table");
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }

@@ -43,24 +43,15 @@ include_once "header.php";
                     </div>
 
                     <div style="display:flex;">
-                        <button class="btn dropdown-toggle" type="button" id="reconcilePrepare" data-bs-toggle="dropdown" aria-expanded="false" style="margin-top:20px; margin-left:20px; width:37%; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right:325px;"> Select tables</span></button>
-                        <ul class="dropdown-menu" aria-labelledby="reconcilePrepare" style="width:30%;">
+                        <select class='form-select' id='joinTable1' name='joinTable1' style="margin-left:20px;width:37.5%">
+                            <option value=''>Choose table</option>
                             <?php foreach($tables as $table) {?>
-                                <li><a class="dropdown-item"><input class="form-check-input column-checkbox" type="checkbox" name="reconcilePrepare[]" value="<?=$table['name']?>" id="" style="margin-right:5px;"><label class="form-check-label" for="checkbox"><?=$table['name']?></label></a></li>
-                            <?php } ?>
-                        </ul>
+                                <option value='<?=$table['name']?>'><?=$table['name']?></option>
+                            <?php }?>
+                        </select>
                     </div>
                     <div style="display:flex;">
-                        <div id="reconcileTableColumns1" class="dropdown" style="display: flex; justify-content: flex-start;">
-                        </div>
-                        <div id="reconcileTableColumns2" class="dropdown" style="display: flex; justify-content: flex-start;margin-left:12px;">
-                        </div>
-                    </div>
-                    <!-- Relationship drop down -->
-                    <div style="display:flex;">
-                        <div id="reconciletable1RelationShip" class="dropdown" style="display: flex; justify-content: flex-start;display:none">
-                        </div>
-                        <div id="reconciletable2RelationShip" class="dropdown" style="display: flex; justify-content: flex-start;margin-left:12px;display:none">
+                        <div id="reconcileTableColumns1" name="reconcileTableColumns1" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
                         </div>
                     </div>
                     <!-- <p>
@@ -84,36 +75,12 @@ $(document).ready(function(){
             url: "get_tables_for_reconcile.php", // Replace with your PHP page URL
             data: {
                 tableName: tableName,
-                selectBoxId: 'joinDropdown1',
-                selectBoxName: 'joinTable1Columns'
+                selectBoxId: 'reconcileTableColumns1',
+                selectBoxName: 'reconcileTableColumns1'
             },
             success: function(response) {
                 const result = response.split("||");
-                $("#joinTableColumns1").html(result[0]);
-                $("#table1RelationShip").html(result[1]);
-                $("#table1RelationShip").show();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Something went wrong");
-            }
-        });
-    });
-
-    $('#joinTable2').change(function(e) {
-        const tableName = e.target.value;
-        $.ajax({
-            type: "POST",
-            url: "load_join_tables.php", // Replace with your PHP page URL
-            data: {
-                tableName: tableName,
-                selectBoxId: 'joinDropdown2',
-                selectBoxName: 'joinTable2Columns'
-            },
-            success: function(response) {
-                const result = response.split("||");
-                $("#joinTableColumns2").html(result[0]);
-                $("#table2RelationShip").html(result[1]);
-                $("#table2RelationShip").show();
+                $("#reconcileTableColumns1").html(result[0]);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log("Something went wrong");

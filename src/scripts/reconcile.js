@@ -1,12 +1,3 @@
-var successMsg = document.getElementById('successMsg').value;
-var errMsg    = document.getElementById('errorMsg').value;
-
-if(errMsg != '') {
-    document.getElementById('errorMsg').style.display = "inline-block";
-}
-if(successMsg != '') {
-    document.getElementById('successMsg').style.display = "inline-block";
-}
 function allowDrop(ev) {
     ev.preventDefault();
 }
@@ -38,19 +29,6 @@ function drop(ev) {
         icon.remove();
     }
 }
-
-setTimeout(function() {
-    var errMsg = document.getElementById('errorMsg');
-    errMsg.style.opacity = '0';
-
-    var successMsg = document.getElementById('successMsg');
-    successMsg.style.opacity = '0';
-
-    setTimeout(function() {
-        errMsg.style.display = 'none';
-        successMsg.style.display = 'none';
-    }, 1000);
-}, 2000);
 
 function doAjaxCall(dataList) {
       var tableName = 'php_customers';

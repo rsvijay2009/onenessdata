@@ -48,3 +48,15 @@ Create two drop down to shows the columns and create a another one to choose the
 After join redirect to another page and show the result
 
 Save the table only if the user like to save(Display it in the left panel under join option)
+
+
+
+Sum operation
+
+dipalsy all the selected columns in select column drop down and unique key
+
+
+
+
+
+select product, sum(price) as sum_price, from php_sales group by (product);

@@ -25,19 +25,17 @@ include_once "header.php";
             <input type="hidden" id="selectedTable" name="selectedTable" value="">
             <input type="hidden" id="selectedColumns" name="selectedColumns" value="">
             <input type="hidden" id="selectedColumnsToSum" name="selectedColumnsToSum" value="">
-            <input type="hidden" id="selectedColumnsToGroupBy" name="selectedColumnsToGroupBy" value="">
-
-
+            <input type="hidden" id="selectedColumnsForUserKeyGen" name="selectedColumnsForUserKeyGen" value="">
             <div class="row" style="margin-top:50px;">
                 <div class="col-xl-5" id="prepareDiv">
-                    <div class="card" ondrop="drop(event)" ondragover="allowDrop(event)" style="cursor:pointer;">
-                        <div class="plus-icon">Prepare</div>
+                    <div class="card" ondrop="drop(event)" ondragover="allowDrop(event)" style="cursor:pointer;max-width:225px; min-height:100px;max-height:145px;">
+                        <div class="plus-icon" style="font-size:30px;">Prepare</div>
                         <div class="card-body"></div>
                     </div>
                 </div>
                 <div class="col-xl-5" style="margin-left:150px;" id="compareDiv">
-                    <div class="card" ondrop="drop(event)" ondragover="allowDrop(event)">
-                        <div class="plus-icon">Compare</div>
+                    <div class="card" ondrop="drop(event)" ondragover="allowDrop(event)" style="margin-left:150px;cursor:pointer;max-width:225px; min-height:100px;max-height:145px;">
+                        <div class="plus-icon" style="font-size:30px;">Compare</div>
                         <div class="card-body"></div>
                     </div>
                 </div>
@@ -52,7 +50,7 @@ include_once "header.php";
                             <?php }?>
                         </select>
                     </div>
-                    <div style="">
+                    <div>
                         <div id="reconcileTableColumns1" name="reconcileTableColumns1" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%"></div>
                 </div>
             </div>
@@ -75,11 +73,8 @@ include_once "header.php";
                 </div>
             </div>
                 <p>
-                <a href="#"  id="prepareBtnId" class="btn btn-success" style="width:10%; height:45px; padding:10px;margin-top:20px;margin-left:20px;display:none;">Prepare</a>
-                <!--<a href="home.php" class="btn btn-primary" style="width:10%; height:45px; padding:10px;margin-bottom:4px;margin-left:-15px;">Back</a>
-                <span id="successMsg" class="successMsg"><?= $successMsg ?></span>
-                <span id="errorMsg" class="errorMsg"><?= $errorMsg ?></span>
-            </p> -->
+                    <a href="#"  id="prepareBtnId" class="btn btn-success" style="width:10%; height:45px; padding:10px;margin-top:20px;margin-left:20px;display:none;">Prepare</a>
+                </p>
         </div>
     </div>
 </div>
@@ -92,7 +87,7 @@ $(document).ready(function() {
         $('#selectedTable').val(tableName);
         $.ajax({
             type: "POST",
-            url: "get_tables_for_reconcile.php", // Replace with your PHP page URL
+            url: "get_tables_for_reconcile.php",
             data: {
                 tableName: tableName,
                 selectBoxId: 'reconcileTableColumns1',
@@ -107,42 +102,33 @@ $(document).ready(function() {
             }
         });
     });
-
     $('#prepareDiv').click(function(){
         $('#tableListDropDown').show();
+        $('#compareDiv').hide();
     });
-
     $('#reconcileTableColumns1').on('change', '.tableColsChkBox', function() {
         updateDropdown();
     });
-    $('#reconcileGroupByColumnsDiv').on('change', '.reconcileGroupByColumns', function() {
-        console.log("fjshjfhsjghs");
-        //Dynamically generate the link for prepare
-        const tableName = document.getElementById('selectedTable').value;
-        let selectedColumns = document.getElementById('selectedColumns').value;
-        selectedColumns = selectedColumns.replace(/,\s*/g, ',');
-        const selectedColumnsToSum = document.getElementById('selectedColumnsToSum').value;
-        const link = document.getElementById('prepareBtnId');
-        const checkboxes4 = document.querySelectorAll('.reconcileGroupByColumns');
-        const selectedTableColumnsToGroupBy = [];
-        checkboxes4.forEach(checkbox => {
+    $('#uniquKeyGenColumns').on('change', '.uniqueKeyGenChkBox', function() {
+        const checkboxes = document.querySelectorAll('.uniqueKeyGenChkBox');
+        const selectedTableColumnsForUniquKeyGen = [];
+        let selectedTableColumnsForUniquKeyGenStr = '';
+        checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
-                console.log(checkbox.value);
-                selectedTableColumnsToGroupBy.push(checkbox.value);
+                selectedTableColumnsForUniquKeyGen.push(checkbox.value);
+                selectedTableColumnsForUniquKeyGenStr = selectedTableColumnsForUniquKeyGen.join(", ");
+                document.getElementById('selectedColumnsForUserKeyGen').value = selectedTableColumnsForUniquKeyGen.join(", ");
             }
-            const selectedTableColumnsToGroupByStr = selectedTableColumnsToGroupBy.join(", ");
-            const newUrl = 'view_reconcile_data.php?table='+tableName+'&selectedColumns='+selectedColumns+'&selectedColumnsToSum='+selectedColumnsToSum+'&selectedColumnsToGroupBy='+selectedTableColumnsToGroupByStr
-                console.log(newUrl);
-                link.setAttribute('href', newUrl);
         });
+        let newUrl = generateLinkForDataPrepare(selectedTableColumnsForUniquKeyGenStr);
+        const link = document.getElementById('prepareBtnId');
+        link.setAttribute('href', newUrl);
     });
     $('#reconcileTableColumnsToSum').on('change', '.columnsToSumChkBox', function() {
         const checkboxes1 = document.querySelectorAll('.tableColsChkBox');
-        const checkboxes2 = document.querySelectorAll('.uniqueKeyGenChkBox');
         const checkboxes3 = document.querySelectorAll('.columnsToSumChkBox');
         // Collect selected checkboxes
         const selectedTableColumns = [];
-        const selectedTableColumnsForUniquKeyGen = [];
         const selectedTableColumnsToSum = [];
 
         checkboxes1.forEach(checkbox => {
@@ -150,24 +136,17 @@ $(document).ready(function() {
                 selectedTableColumns.push(checkbox.value);
             }
         });
-
         checkboxes3.forEach(checkbox => {
             if (checkbox.checked) {
                 selectedTableColumnsToSum.push(checkbox.value);
-                // Filter array1 to get elements not in array2
-                const groupBycolumns = selectedTableColumns.filter(item => !selectedTableColumnsToSum.includes(item));
-                reconcileGroupByColumns = '<button class="btn dropdown-toggle" type="button" id="reconcileGroupByColumns" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; width:100%; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="reconcileGroupByColumns" style="width: 95%; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
-
-                groupBycolumns.forEach(option => {
-                    reconcileGroupByColumns+='<li><a class="dropdown-item"><input class="form-check-input column-checkbox reconcileGroupByColumns" type="checkbox" name="reconcileGroupByColumns[]" value="'+option+'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'+option+'</label></a></li>';
-                });
-                $('#groupByTitleId').show();
-                $('#reconcileGroupByColumnsDiv').show();
-                $('#reconcileGroupByColumns').html(reconcileGroupByColumns);
+                console.log(selectedTableColumnsToSum);
                 $('#prepareBtnId').show();
                 document.getElementById('selectedColumnsToSum').value = selectedTableColumnsToSum.join(", ");
             }
         });
+        let newUrl = generateLinkForDataPrepare();
+        const link = document.getElementById('prepareBtnId');
+        link.setAttribute('href', newUrl);
     });
 
     function updateDropdown() {
@@ -177,7 +156,6 @@ $(document).ready(function() {
 
         const checkboxes1 = document.querySelectorAll('.tableColsChkBox');
         const checkboxes2 = document.querySelectorAll('.uniqueKeyGenChkBox');
-        const checkboxes3 = document.querySelectorAll('.columnsToSumChkBox');
         // Collect selected checkboxes
         const selectedTableColumns = [];
         const selectedTableColumnsForUniquKeyGen = [];
@@ -187,23 +165,6 @@ $(document).ready(function() {
                 selectedTableColumns.push(checkbox.value);
             }
             document.getElementById('selectedColumns').value = selectedTableColumns.join(", ");
-        });
-
-        checkboxes3.forEach(checkbox => {
-            if (checkbox.checked) {
-                selectedTableColumnsToSum.push(checkbox.value);
-                console.log(selectedTableColumnsToSum);
-                // Filter array1 to get elements not in array2
-                const groupBycolumns = selectedTableColumns.filter(item => !selectedTableColumnsToSum.includes(item));
-                reconcileGroupByColumns = '<button class="btn dropdown-toggle" type="button" id="reconcileGroupByColumns" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; width:100%; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="reconcileGroupByColumns" style="width: 95%; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
-
-                groupBycolumns.forEach(option => {
-                    reconcileGroupByColumns+='<li><a class="dropdown-item"><input class="form-check-input column-checkbox reconcileGroupByColumns" type="checkbox" name="reconcileGroupByColumns[]" value="'+option+'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'+option+'</label></a></li>';
-                });
-                $('#groupByTitleId').show();
-                $('#reconcileGroupByColumnsDiv').show();
-                $('#reconcileGroupByColumns').html(reconcileGroupByColumns);
-            }
         });
         // Populate dropdown with selected options
         selectedTableColumns.forEach(option => {
@@ -229,6 +190,40 @@ $(document).ready(function() {
             uniquKeyGenOptionsDiv.style.display = 'none';
         }
     });
+
+    function generateLinkForDataPrepare(userkeyGenColumnsStr= '') {
+        //Dynamically generate the link for prepare
+        const tableName = document.getElementById('selectedTable').value;
+        let selectedColumns = document.getElementById('selectedColumns').value;
+        selectedColumns = selectedColumns.replace(/,\s*/g, ',');
+        const selectedColumnsToSum = document.getElementById('selectedColumnsToSum').value;
+        let selectedColumnsArr = selectedColumns.split(',');
+        let selectedColumnsToSumArr = selectedColumnsToSum.split(',');
+
+        let groupBycolumnsArr = selectedColumnsArr.filter(item => !selectedColumnsToSumArr.includes(item));
+
+        const groupBycolumns = groupBycolumnsArr.join(',');
+
+        let userkeyGenColumns = (userkeyGenColumnsStr == '') ? document.getElementById('selectedColumnsForUserKeyGen').value : userkeyGenColumnsStr;
+        const newUrl = 'view_reconcile_data.php?table='+tableName+'&selectedColumns='+selectedColumns+'&selectedColumnsToSum='+selectedColumnsToSum+'&selectedColumnsToGroupBy='+groupBycolumns+'&uniqueKeyGenColumns='+userkeyGenColumns
+        console.log(newUrl);
+        getSelectedColumnValues();
+
+        return newUrl;
+    }
+    function getSelectedColumnValues() {
+        var select = document.getElementById('reconcileTableColumns100');
+        var selectedValues = [];
+
+        for (var i = 0; i < select.options.length; i++) {
+            var option = select.options[i];
+            if (option.selected) {
+                selectedValues.push(option.value);
+            }
+        }
+        selectedValues = selectedValues.join(', ');
+        console.log (selectedValues);
+    }
 });
 </script>
 </body>

@@ -56,6 +56,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
             <?php } ?>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="merge.php">Merge</a>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="join.php">Join</a>
+            <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="reconcile.php">Go to Reconcile</a>
             <?php
                 $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
                 AND table_name LIKE 'reconcile_%'; ");

@@ -40,41 +40,46 @@ include_once "header.php";
                     </div>
                 </div>
             </div>
-            <div id="tableListDropDown" style="display:none;">
-                <div style="display:flex;">
-                    <div  style="width:30%;">
-                        <select class='form-select' id='tablesList' name='tablesList' style="margin-left:20px;width:60%">
-                            <option value=''>Choose table</option>
-                            <?php foreach($tables as $table) {?>
-                                <option value='<?=$table['name']?>'><?=$table['name']?></option>
-                            <?php }?>
-                        </select>
+
+            <!-- Prepare designs -->
+            <div class="col-md-12" style="" id="prepareDivItems">
+                <div id="tableListDropDown" style="display:none;">
+                    <div style="display:flex;">
+                        <div  style="width:30%;">
+                            <select class='form-select' id='tablesList' name='tablesList' style="margin-left:20px;width:60%">
+                                <option value=''>Choose table</option>
+                                <?php foreach($tables as $table) {?>
+                                    <option value='<?=$table['name']?>'><?=$table['name']?></option>
+                                <?php }?>
+                            </select>
+                        </div>
+                        <div>
+                            <div id="reconcileTableColumns1" name="reconcileTableColumns1" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%"></div>
                     </div>
-                    <div>
-                        <div id="reconcileTableColumns1" name="reconcileTableColumns1" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%"></div>
                 </div>
-            </div>
-            <div id="uniqueKeyGenerationTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns for unique key generation <input class="form-check-input column-checkbox" type="checkbox" name="mandateUniqueKeyGen" id="mandateUniqueKeyGen" style="margin-right: 10px;">
-            </div>
-            <div style="display:flex; display:none;" id="uniquKeyGenOptionsDiv">
-                <div id="uniquKeyGenColumns" name="uniquKeyGenColumns" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                <div id="uniqueKeyGenerationTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns for unique key generation <input class="form-check-input column-checkbox" type="checkbox" name="mandateUniqueKeyGen" id="mandateUniqueKeyGen" style="margin-right: 10px;">
                 </div>
-            </div>
-            <div id="selectColumnsToSumTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns to sum
-            </div>
-            <div style="display:flex; display:none;" id="reconcileTableColumnsToSumDiv">
-                <div id="reconcileTableColumnsToSum" name="reconcileTableColumnsToSum" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                <div style="display:flex; display:none;" id="uniquKeyGenOptionsDiv">
+                    <div id="uniquKeyGenColumns" name="uniquKeyGenColumns" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                    </div>
                 </div>
-            </div>
-            <div id="groupByTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns to group
-            </div>
-            <div style="display:flex; display:none;" id="reconcileGroupByColumnsDiv">
-                <div id="reconcileGroupByColumns" name="reconcileGroupByColumns" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                <div id="selectColumnsToSumTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns to sum
                 </div>
-            </div>
+                <div style="display:flex; display:none;" id="reconcileTableColumnsToSumDiv">
+                    <div id="reconcileTableColumnsToSum" name="reconcileTableColumnsToSum" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                    </div>
+                </div>
+                <div id="groupByTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns to group
+                </div>
+                <div style="display:flex; display:none;" id="reconcileGroupByColumnsDiv">
+                    <div id="reconcileGroupByColumns" name="reconcileGroupByColumns" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%">
+                    </div>
+                </div>
                 <p>
                     <a href="#"  id="prepareBtnId" class="btn btn-success" style="width:10%; height:45px; padding:10px;margin-top:20px;margin-left:20px;display:none;">Prepare</a>
                 </p>
+            </div>
+
         </div>
     </div>
 </div>
@@ -207,22 +212,7 @@ $(document).ready(function() {
         let userkeyGenColumns = (userkeyGenColumnsStr == '') ? document.getElementById('selectedColumnsForUserKeyGen').value : userkeyGenColumnsStr;
         const newUrl = 'view_reconcile_data.php?table='+tableName+'&selectedColumns='+selectedColumns+'&selectedColumnsToSum='+selectedColumnsToSum+'&selectedColumnsToGroupBy='+groupBycolumns+'&uniqueKeyGenColumns='+userkeyGenColumns
         console.log(newUrl);
-        getSelectedColumnValues();
-
         return newUrl;
-    }
-    function getSelectedColumnValues() {
-        var select = document.getElementById('reconcileTableColumns100');
-        var selectedValues = [];
-
-        for (var i = 0; i < select.options.length; i++) {
-            var option = select.options[i];
-            if (option.selected) {
-                selectedValues.push(option.value);
-            }
-        }
-        selectedValues = selectedValues.join(', ');
-        console.log (selectedValues);
     }
 });
 </script>

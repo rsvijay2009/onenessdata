@@ -2,23 +2,28 @@
 include_once "database.php";
 include_once "sidebar.php";
 
-$tableName = $_REQUEST['table'] ?? null;
-$dataQualityType = $_REQUEST['type'] ?? null;
-$projectName = $_REQUEST['project'] ?? '';
-$columnName = $_REQUEST['column'] ?? '';
-$columnValue = $_REQUEST['col_value'] ?? '';
+try {
+    $tableName = $_REQUEST['table'] ?? null;
+    $dataQualityType = $_REQUEST['type'] ?? null;
+    $projectName = $_REQUEST['project'] ?? '';
+    $columnName = $_REQUEST['column'] ?? '';
+    $columnValue = $_REQUEST['col_value'] ?? '';
 
-// PDO connection setup
-$pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // PDO connection setup
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name')");
-$columnQuery->execute();
-$columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
+    $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name')");
+    $columnQuery->execute();
+    $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 
-$sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` WHERE  `$columnName` = '$columnValue'");
-$sqlQuery->execute();
-$data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
+    $sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` WHERE  `$columnName` = '$columnValue'");
+    $sqlQuery->execute();
+    $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
+} catch(Exception $e) {
+    header("Location:something_went_wrong.php");
+    exit;
+}
 
 include_once "header.php";
 ?>

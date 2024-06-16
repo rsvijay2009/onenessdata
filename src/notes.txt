@@ -26,3 +26,24 @@ column name - user_key value (concat of selected column values (ex video_game, 5
 
 
 We need to save the prepare result in a new table along with the origional table name once user wish to save the data
+
+
+
+Compare error for same two table relationship
+
+
+Alter the stored procedure
+
+assign variables to get all the compare data
+
+select DISTINCT(product) from php_sales UNION select DISTINCT(product) from php_sales; - reference
+
+
+
+
+I need to pass tableA, tableB, tableA_Relationship,tableB_Relationship, tableA_Column_To_Compare, tableB_Column_To_Compare to a mysql stored procedure and execute a query like
+select distinct(tableA_Relationship) from tableA UNION select distinct(tableB_Relationship) from tableA
+
+and create a table like compare_data_1234567 (1234567 is timetamp) with columns like relationship_key, tableA_tableB_Relationship, tableB_tableB_Relationship, difefrence
+
+and insert the above query result in compare_data_1234567 table

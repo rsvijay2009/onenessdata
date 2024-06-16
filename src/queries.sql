@@ -241,3 +241,65 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (username, password) VALUES('admin', 'admin');
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE CompareTables(
+    IN tableA VARCHAR(255),
+    IN tableB VARCHAR(255),
+    IN tableA_Relationship VARCHAR(255),
+    IN tableB_Relationship VARCHAR(255),
+    IN tableA_Column_To_Compare VARCHAR(255),
+    IN tableB_Column_To_Compare VARCHAR(255)
+)
+BEGIN
+    DECLARE timestamp_str VARCHAR(20);
+    DECLARE compare_table_name VARCHAR(255);
+    DECLARE create_table_sql TEXT;
+    DECLARE insert_sql TEXT;
+    DECLARE select_sql TEXT;
+
+    -- Generate unique table name using timestamp
+    SET timestamp_str = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s');
+    SET compare_table_name = CONCAT('compare_data_', timestamp_str);
+
+    -- Create the comparison table
+    SET @create_table_sql = CONCAT(
+        'CREATE TABLE ', compare_table_name, ' (',
+        'relationship_key VARCHAR(255), ',
+        'tableA_', tableA_Relationship, ' VARCHAR(255), ',
+        'tableB_', tableB_Relationship, ' VARCHAR(255), ',
+        'difference VARCHAR(255))'
+    );
+
+    -- Execute the create table SQL
+    PREPARE stmt FROM @create_table_sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    -- Construct the insert query
+    SET @insert_sql = CONCAT(
+        'INSERT INTO ', compare_table_name, ' (relationship_key) ',
+        'SELECT DISTINCT ', tableA_Relationship, ' FROM ', tableA, ' ',
+        'UNION ',
+        'SELECT DISTINCT ', tableB_Relationship, ' FROM ', tableB
+    );
+
+    -- Execute the insert SQL
+    PREPARE stmt FROM @insert_sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    -- Construct the select query
+    SET select_sql = CONCAT('SELECT * FROM ', compare_table_name);
+
+    -- Execute the select SQL and return the results
+    SET @select_sql = select_sql;
+    PREPARE stmt FROM @select_sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END $$
+
+DELIMITER ;

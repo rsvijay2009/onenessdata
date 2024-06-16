@@ -15,7 +15,7 @@ $stmt->execute();
 $columns = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 
-$outputHtmlColumns = '<button class="btn dropdown-toggle" type="button" id="'.$selectBoxName.'" data-bs-toggle="dropdown" aria-expanded="false" style="margin-left:-120px;color:#000; border: 1px solid #c9c5c5;width:237px;"><span style="margin-right: 90px;"> Select Columns</span></button><ul class="dropdown-menu" aria-labelledby="'.$selectBoxName.'" style="width: 95%; width:237px;">';
+$outputHtmlColumns = '<button class="btn dropdown-toggle" type="button" id="'.$selectBoxName.'" data-bs-toggle="dropdown" aria-expanded="false" style="margin-left:50px;color:#000; border: 1px solid #c9c5c5;width:237px;"><span style="margin-right: 90px;"> Select Columns</span></button><ul class="dropdown-menu" aria-labelledby="'.$selectBoxName.'" style="width: 95%; width:237px;">';
 
 foreach($columns as $column) {
     $outputHtmlColumns.='<li><a class="dropdown-item"><input class="form-check-input column-checkbox tableColsChkBox" type="checkbox" name="'.$selectBoxName.'[]" value="'.$column.'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'.$column.'</label></a></li>';

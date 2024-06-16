@@ -59,7 +59,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="reconcile.php">Go to Reconcile</a>
             <?php
                 $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
-                AND table_name LIKE 'reconcile_%'; ");
+                AND table_name LIKE 'reconcile_%' OR table_name LIKE 'compare_%'");
                 $stmt->execute();
                 $reconcileTables = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $tableCount = count($reconcileTables);

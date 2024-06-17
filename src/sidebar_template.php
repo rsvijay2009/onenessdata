@@ -1,4 +1,5 @@
 <?php
+include_once "utilities/common_utils.php";
 $currentFileName = basename($_SERVER['PHP_SELF']);
 $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2';
 ?>

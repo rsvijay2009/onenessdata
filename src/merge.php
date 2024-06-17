@@ -46,18 +46,19 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                 if ($index > 0) {
                     $unionSQL .= " UNION ALL ";
                 }
-                $newTableName .= $tableName . "_";
+                $newTableName .= ($index == 0) ? $tableName : "_".$tableName;
                 $unionSQL .= "SELECT * FROM $tableName";
                 $tableNameList[] =  $tableName;
             }
 
             try {
                 $newTableName = strtolower($newTableName).time();
-                $newTableName = (strlen($newTableName) > 20) ? substr($newTableName, 0, 20) : $newTableName;
+                $newTableName = (strlen($newTableName) > 64) ? substr($newTableName, 0, 64) : $newTableName;
                 $pdo->exec("CREATE TABLE `$newTableName` AS $unionSQL");
 
                 //Insert a new row for mergerd table in tables_list table
                 $firstTableName = $tableNameList[0] ?? null;
+
                 if($firstTableName) {
                     $stmt = $pdo->prepare("SELECT project_id FROM tables_list WHERE name = '$firstTableName' LIMIT 1");
                     $stmt->execute();
@@ -73,7 +74,6 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                         $stmt->execute();
 
                         $isDataTypeTableCreated = createDynamicTableTypes($newTableName.'_datatype', $pdo);
-
                         if($isDataTypeTableCreated) {
                             //Get the first table datatypes
                             $firstTableNameDatatype = $firstTableName.'_datatype';

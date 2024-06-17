@@ -143,9 +143,16 @@ function addUnderScoreBetweenSpaceInString($string)
     return preg_replace('/_+/', '_', $string);
 }
 
+function convertMultipleUnderscoresIntoSingle($string)
+{
+    return preg_replace('/_+/', '_', $string);
+}
+
 function createDynamicTableTypes($tableName, $pdo)
 {
     try {
+        $tableName = convertMultipleUnderscoresIntoSingle($tableName);
+
         $sql = "CREATE TABLE IF NOT EXISTS $tableName (
             id INT AUTO_INCREMENT PRIMARY KEY,
             table_id INT NOT NULL,
@@ -171,6 +178,7 @@ function createDynamicTableTypes($tableName, $pdo)
 function createDynamicTableForDashboard($tableName, $pdo)
 {
     try {
+        $tableName = convertMultipleUnderscoresIntoSingle($tableName);
         $sql = "CREATE TABLE IF NOT EXISTS $tableName (
             id INT AUTO_INCREMENT PRIMARY KEY,
             data_quality_correct_data INT NOT NULL DEFAULT 0,
@@ -202,6 +210,7 @@ function createDynamicTableForDataVerification($tableName, $pdo)
 {
     try {
         $tableName = $tableName."_data_verification";
+        $tableName = convertMultipleUnderscoresIntoSingle($tableName);
 
         $sql = "CREATE TABLE $tableName (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -232,6 +241,7 @@ function calculateDataQualityStatPercentage($oveallCount, $value)
 function insertIntoDynamicDatatypeTable($tableName, $dataToInsert, $pdo)
 {
     $dataTypeTableName = $tableName.'_datatype';
+    $dataTypeTableName = convertMultipleUnderscoresIntoSingle($dataTypeTableName);
     $insertSql = "INSERT INTO $dataTypeTableName (table_id, table_name, column_name, datatype_id, datatype, data_quality, uniqueness) VALUES (:table_id, :table_name, :column_name, :datatype_id, :datatype, :data_quality, :uniqueness)";
     $stmt = $pdo->prepare($insertSql);
 
@@ -289,4 +299,9 @@ function getColumnNames($pdo, $table)
 {
     $stmt = $pdo->query("DESCRIBE $table");
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
+
+function trimTableLength($tableName)
+{
+    return (strlen($tableName) > 19) ? substr($tableName, 0, 19) : $tableName;
 }

@@ -34,7 +34,8 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     ?>
                     <div class="menu collapse <?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "show" : ""?>" id="<?=$project["name"]?>">
                         <?php foreach ($tables as $table) {
-                            $tblName = str_replace($project["name"]."_", "",$table["name"])
+                            $tblName = str_replace($project["name"]."_", "",$table["name"]);
+                            $tblName = trimTableLength($tblName);
                             ?>
                             <ul class="nav flex-column p-1">
                                     <li class="nav-item"  draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
@@ -77,7 +78,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                         <?php foreach ($reconcileTables as $reconcileTable) {?>
                             <ul class="nav flex-column p-1">
                                 <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
-                                    <a href="#" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=$reconcileTable['TABLE_NAME']?>
+                                    <a href="#" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($reconcileTable['TABLE_NAME'])?>
                                     </a>
                                 </li>
                             </ul>

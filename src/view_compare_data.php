@@ -26,7 +26,7 @@ if(isset($_REQUEST) && !empty($_REQUEST['selectedTablesForCompare']) && !empty($
     $stmt->execute();
     $comparedDataItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $tableColumns = array_keys($comparedDataItems[0]) ?? [];
-    $successMsg = 'Compared data saved successfully';
+    //$successMsg = 'Compared data saved successfully';
 }
 include_once "header.php";
 ?>

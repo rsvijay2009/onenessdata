@@ -40,7 +40,7 @@ include_once "header.php";
 </head>
 <body>
 <?php if (count($columns) == 0) {
-    header("Location:something_went_wrong.php");
+    header("Location:home.php?msg=table");
     exit;
 } else {?>
 <div class="container-fluid">

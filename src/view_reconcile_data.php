@@ -19,7 +19,8 @@ try {
     // PDO connection setup
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    //echo "SELECT $columnsToSelectFromTable, SUM($sumColumn) as $sumColumn FROM $table GROUP BY $groupByColumns";
+    // echo "SELECT $columnsToSelectFromTable, SUM($sumColumn) as $sumColumn FROM $table GROUP BY $groupByColumns";
+    // exit;
     $queryToGetData = "SELECT $columnsToSelectFromTable, SUM($sumColumn) as $sumColumn FROM $table GROUP BY $groupByColumns";
     $stmt = $pdo->prepare($queryToGetData);
     $stmt->execute();

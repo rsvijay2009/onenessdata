@@ -27,8 +27,8 @@ include_once "header.php";
       <input type="hidden" id="relationshipColumnsToCompare" name="relationshipColumnsToCompare" value="">
       <input type="hidden" id="columnToCompare" name="columnToCompare" value="">
       <!-- Left Card -->
-      <div class="col-md-5" id="prepareDiv" style="cursor:pointer;margin-top:40px;">
-        <div class="card">
+      <div class="col-md-5"  style="margin-top:40px;">
+        <div class="card" id="prepareDiv" style="cursor:pointer;">
           <div class="plus-icon" style="font-size:30px;">Prepare</div>
           <div class="card-body"></div>
           <div class="card-body"></div>
@@ -61,9 +61,9 @@ include_once "header.php";
         </div>
       </div>
       <!-- Right Card -->
-      <div class="col-md-5" id="compareDiv" style="cursor:pointer;margin-top:40px;">
-        <div class="card">
-          <div class="plus-icon" style="font-size:30px;">Compare</div>
+      <div class="col-md-5"  style="margin-top:40px;">
+      <div class="card" id="compareDiv" style="cursor:pointer;">
+          <div class="plus-icon" style="font-size:30px;" id="">Compare</div>
           <div class="card-body"></div>
           <div class="card-body"></div>
         </div>
@@ -200,17 +200,23 @@ $(document).ready(function() {
     function updateDropdown() {
         reconcileTableColumnsToSum = '<button class="btn dropdown-toggle" type="button" id="reconcileTableColumnsToSum" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="reconcileTableColumnsToSum" style="width: 455px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
 
-        uniquKeyGenColumns = '<button class="btn dropdown-toggle" type="button" id="uniquKeyGenColumns" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; width:450px;border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="uniquKeyGenColumns" style="width: 450px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
+        uniquKeyGenColumns = '<button class="btn dropdown-toggle" type="button" id="uniquKeyGenColumns" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; width:450px;border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="uniquKeyGenColumns" style="width: 450px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start"><li><a class="dropdown-item"><input class="form-check-input column-checkbox uniqueKeyGenChkBoxAll" type="checkbox"  style="margin-right: 10px;"><label class="form-check-label" for="checkbox">Select all</label></a></li>';
 
-        const checkboxes1 = document.querySelectorAll('.tableColsChkBox');
+        var elements1 = document.querySelectorAll('.tableColsChkBox');
+        var elements1Array = Array.from(elements1);
+        var checkboxeElements = new Set(elements1Array);
+        var checkboxes1 = Array.from(checkboxeElements);
         const checkboxes2 = document.querySelectorAll('.uniqueKeyGenChkBox');
-        // Collect selected checkboxes
         const selectedTableColumns = [];
         const selectedTableColumnsForUniquKeyGen = [];
         const selectedTableColumnsToSum = [];
         checkboxes1.forEach(checkbox => {
             if (checkbox.checked) {
+              var allChecked = $('.tableColsChkBox').length === $('.tableColsChkBox:checked').length;
+              $('.tableColsChkBoxAll').prop('checked', allChecked);
+              if (!selectedTableColumns.includes(checkbox.value)) {
                 selectedTableColumns.push(checkbox.value);
+              }
             }
             document.getElementById('selectedColumns').value = selectedTableColumns.join(", ");
         });
@@ -346,6 +352,30 @@ $(document).ready(function() {
             window.location.href = url;
         }
     })
+    $(document).on('change', '.tableColsChkBoxAll', function() {
+        var isChecked = $(this).prop('checked');
+        if (isChecked) {
+          $('.tableColsChkBox').prop('checked', true);
+        } else {
+          $('.tableColsChkBox').prop('checked', false);
+        }
+        $('#uniqueKeyGenerationTitleId').show();
+        $('#selectColumnsToSumTitleId').show();
+        $('#reconcileTableColumnsToSumDiv').show();
+        updateDropdown();
+    });
+    $(document).on('change', '.uniqueKeyGenChkBoxAll', function() {
+        var isChecked = $(this).prop('checked');
+        if (isChecked) {
+          $('.uniqueKeyGenChkBox').prop('checked', true);
+        } else {
+          $('.uniqueKeyGenChkBox').prop('checked', false);
+        }
+    });
+    $(document).on('change', '.uniqueKeyGenChkBox', function() {
+        var allChecked = $('.uniqueKeyGenChkBox').length === $('.uniqueKeyGenChkBox:checked').length;
+        $('.uniqueKeyGenChkBoxAll').prop('checked', allChecked);
+    });
 });
 </script>
 </body>

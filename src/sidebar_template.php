@@ -57,7 +57,35 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                 </div>
             <?php } ?>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="merge.php">Merge</a>
-            <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="join.php">Join</a>
+            <?php
+                $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
+                AND table_name LIKE 'join%'");
+                $stmt->execute();
+                $savedJoinTables = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $savedJoinTableCount = count($savedJoinTables);
+            ?>
+            <div class="menu-item">
+                <span class="d-flex justify-content-between align-items-center">
+                    <a class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" href="#join" role="button" aria-expanded="false" style="color:#71B6FA; text-wrap:wrap;margin-top:-5px;"> Join
+                            <span class="badge" style="font-weight:bold;font-size:20px;color:black;">+</span>
+                    </a>
+                </span>
+                <div class="menu collapse " id="join">
+                    <ul class="nav flex-column p-1">
+                        <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;"><a href="join.php" style="text-decoration:none;padding-left:14px;color:#71B6FA;" role="button">New join
+                        </a>
+                        </li>
+                    </ul>
+                    <?php foreach ($savedJoinTables as $savedJoinTable) {?>
+                        <ul class="nav flex-column p-1">
+                            <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
+                                <a href="view_join_table_data.php?table=<?=$savedJoinTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($savedJoinTable['TABLE_NAME'])?>
+                                </a>
+                            </li>
+                        </ul>
+                    <?php } ?>
+                </div>
+            </div>
             <?php
                 $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
                 AND table_name LIKE 'reconcile_%' OR table_name LIKE 'compare_%'");
@@ -66,27 +94,27 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                 $tableCount = count($reconcileTables);
             ?>
             <div class="menu-item">
-                    <span class="d-flex justify-content-between align-items-center">
-                        <a class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" href="#reconcile" role="button" aria-expanded="false" style="color:#71B6FA; text-wrap:wrap;margin-top:-5px;"> Reconcile
-                                <span class="badge" style="font-weight:bold;font-size:20px;color:black;">+</span>
+                <span class="d-flex justify-content-between align-items-center">
+                    <a class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" href="#reconcile" role="button" aria-expanded="false" style="color:#71B6FA; text-wrap:wrap;margin-top:-5px;"> Reconcile
+                            <span class="badge" style="font-weight:bold;font-size:20px;color:black;">+</span>
+                    </a>
+                </span>
+                <div class="menu collapse " id="reconcile">
+                    <ul class="nav flex-column p-1">
+                        <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;"><a href="reconcile.php" style="text-decoration:none;padding-left:14px;color:#71B6FA;" role="button">New project
                         </a>
-                    </span>
-                    <div class="menu collapse " id="reconcile">
+                        </li>
+                    </ul>
+                    <?php foreach ($reconcileTables as $reconcileTable) {?>
                         <ul class="nav flex-column p-1">
-                            <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;"><a href="reconcile.php" style="text-decoration:none;padding-left:14px;color:#71B6FA;" role="button">New project
-                            </a>
+                            <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
+                                <a href="view_reconcile_table_data.php?table=<?=$reconcileTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($reconcileTable['TABLE_NAME'])?>
+                                </a>
                             </li>
                         </ul>
-                        <?php foreach ($reconcileTables as $reconcileTable) {?>
-                            <ul class="nav flex-column p-1">
-                                <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
-                                    <a href="view_reconcile_table_data.php?table=<?=$reconcileTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($reconcileTable['TABLE_NAME'])?>
-                                    </a>
-                                </li>
-                            </ul>
-                        <?php } ?>
-                    </div>
+                    <?php } ?>
                 </div>
+            </div>
         </form>
     </div>
 </div>

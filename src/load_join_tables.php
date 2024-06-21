@@ -27,10 +27,10 @@ $stmt = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primar
 $stmt->execute();
 $columns = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-$outputHtmlColumns = '<button class="btn dropdown-toggle" type="button" id="'.$selectBoxName.'" data-bs-toggle="dropdown" aria-expanded="false" style="margin-top:20px; margin-left:20px; width:100%; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 217px;"> Select Columns</span></button><ul class="dropdown-menu" aria-labelledby='.$selectBoxName.' style="width: 95%;"><li><a class="dropdown-item"><input class="form-check-input '.$selectBoxName.'All" type="checkbox" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">Select all</label></a></li>';
+$outputHtmlColumns = '<button class="btn dropdown-toggle" type="button" id="'.$selectBoxName.'" data-bs-toggle="dropdown" aria-expanded="false" style="margin-top:20px; margin-left:20px; width:100%; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 217px;"> Select Columns</span></button><ul class="dropdown-menu" aria-labelledby='.$selectBoxName.' style="width: 95%;"><li><a class="dropdown-item"><input class="form-check-input '.$selectBoxName.'All" type="checkbox" id="'.$selectBoxName.'" style="margin-right: 10px;"><label class="form-check-label" for="'.$selectBoxName.'">Select all</label></a></li>';
 
 foreach($columns as $column) {
-    $outputHtmlColumns.='<li><a class="dropdown-item"><input class="form-check-input '.$selectBoxName.'" type="checkbox" name="'.$selectBoxName.'[]" value="'.$column.'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'.$column.'</label></a></li>';
+    $outputHtmlColumns.='<li><a class="dropdown-item"><input class="form-check-input '.$selectBoxName.'" type="checkbox" name="'.$selectBoxName.'[]" value="'.$column.'" id="'.$column.'_id" style="margin-right: 10px;"><label class="form-check-label" for="'.$column.'_id">'.$column.'</label></a></li>';
 }
 
 $outputHtmlColumns.='</ul>';

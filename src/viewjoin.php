@@ -75,7 +75,7 @@ include_once "header.php";
         <!-- Content Area -->
         <div class="col-md-10">
                 <div style="padding:10px;">
-                    <h2 style="margin-bottom:25px;">Join result</h2>
+                    <h2 style="margin-bottom:25px;"><?=ucfirst(strtolower($joinType))?> result</h2>
                     <span style="font-weight:bold;color:green" id="notificationMsg"><?=$sucessMsg?></span>
                     <div class="dropdown" style="display: flex; justify-content: flex-end; margin-top:25px;">
                         <a href="join.php" class="btn btn-primary" style="margin-right: 5px;height: 40px;">Back</a>

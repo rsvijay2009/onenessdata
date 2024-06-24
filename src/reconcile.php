@@ -368,6 +368,17 @@ $(document).ready(function() {
         var isChecked = $(this).prop('checked');
         if (isChecked) {
           $('.uniqueKeyGenChkBox').prop('checked', true);
+
+          const checkboxes = document.querySelectorAll('.uniqueKeyGenChkBox');
+          const selectedTableColumnsForUniquKeyGen = [];
+          let selectedTableColumnsForUniquKeyGenStr = '';
+          checkboxes.forEach(checkbox => {
+              if (checkbox.checked) {
+                  selectedTableColumnsForUniquKeyGen.push(checkbox.value);
+                  selectedTableColumnsForUniquKeyGenStr = selectedTableColumnsForUniquKeyGen.join(", ");
+                  document.getElementById('selectedColumnsForUserKeyGen').value = selectedTableColumnsForUniquKeyGen.join(", ");
+              }
+          });
         } else {
           $('.uniqueKeyGenChkBox').prop('checked', false);
         }

@@ -52,8 +52,7 @@ include_once "header.php";
             <div id="uniquKeyGenColumns" name="uniquKeyGenColumns" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%"></div>
           </div>
           <div id="selectColumnsToSumTitleId" style="display:none; margin-left:20px;font-weight:bold;margin-top:15px;">Select columns to sum </div>
-          <div style="display:flex; display:none;" id="reconcileTableColumnsToSumDiv">
-            <div id="reconcileTableColumnsToSum" name="reconcileTableColumnsToSum" class="dropdown" style="display: flex; justify-content: flex-start;width:39.2%"></div>
+          <div style="display:flex; display:none;justify-content: flex-start;width:74%" id="reconcileTableColumnsToSumDiv" >
           </div>
           <p>
             <a href="#" id="prepareBtnId" class="btn btn-success" style="width:20%; height:45px; padding:10px;margin-top:20px;margin-left:20px;display:none;">Prepare</a>
@@ -173,32 +172,45 @@ $(document).ready(function() {
         const link = document.getElementById('prepareBtnId');
         link.setAttribute('href', newUrl);
     });
-    $('#reconcileTableColumnsToSum').on('change', '.columnsToSumChkBox', function() {
-        const checkboxes1 = document.querySelectorAll('.tableColsChkBox');
-        const checkboxes3 = document.querySelectorAll('.columnsToSumChkBox');
-        // Collect selected checkboxes
-        const selectedTableColumns = [];
-        const selectedTableColumnsToSum = [];
-
-        checkboxes1.forEach(checkbox => {
-            if (checkbox.checked) {
-                selectedTableColumns.push(checkbox.value);
-            }
-        });
-        checkboxes3.forEach(checkbox => {
-            if (checkbox.checked) {
-                selectedTableColumnsToSum.push(checkbox.value);
-                console.log(selectedTableColumnsToSum);
-                $('#prepareBtnId').show();
-                document.getElementById('selectedColumnsToSum').value = selectedTableColumnsToSum.join(", ");
-            }
-        });
-        let newUrl = generateLinkForDataPrepare();
-        const link = document.getElementById('prepareBtnId');
-        link.setAttribute('href', newUrl);
+    $('#reconcileTableColumnsToSumDiv').on('change', '#reconcileTableColumnsToSum', function() {
+        if($(this).val()) {
+          console.log($(this).val());
+          $('#prepareBtnId').show();
+          document.getElementById('selectedColumnsToSum').value =  $(this).val();
+          let newUrl = generateLinkForDataPrepare();
+          let link = document.getElementById('prepareBtnId');
+          link.setAttribute('href', newUrl);
+        }
     });
+    // $('#reconcileTableColumnsToSum').on('change', '.columnsToSumChkBox', function() {
+    //     const checkboxes1 = document.querySelectorAll('.tableColsChkBox');
+    //     const checkboxes3 = document.querySelectorAll('.columnsToSumChkBox');
+    //     // Collect selected checkboxes
+    //     const selectedTableColumns = [];
+    //     const selectedTableColumnsToSum = [];
+
+    //     checkboxes1.forEach(checkbox => {
+    //         if (checkbox.checked) {
+    //             selectedTableColumns.push(checkbox.value);
+    //         }
+    //     });
+    //     checkboxes3.forEach(checkbox => {
+    //         if (checkbox.checked) {
+    //             selectedTableColumnsToSum.push(checkbox.value);
+    //             console.log(selectedTableColumnsToSum);
+    //             $('#prepareBtnId').show();
+    //             document.getElementById('selectedColumnsToSum').value = selectedTableColumnsToSum.join(", ");
+    //         }
+    //     });
+    //     let newUrl = generateLinkForDataPrepare();
+    //     const link = document.getElementById('prepareBtnId');
+    //     link.setAttribute('href', newUrl);
+    // });
     function updateDropdown() {
-        reconcileTableColumnsToSum = '<button class="btn dropdown-toggle" type="button" id="reconcileTableColumnsToSum" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="reconcileTableColumnsToSum" style="width: 455px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
+        // reconcileTableColumnsToSum = '<button class="btn dropdown-toggle" type="button" id="reconcileTableColumnsToSum" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="reconcileTableColumnsToSum" style="width: 455px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start">';
+
+
+        reconcileTableColumnsToSum = '<select class="form-select" id="reconcileTableColumnsToSum" name="reconcileTableColumnsToSum" style="margin-left:20px;"><option value="">Choose column to sum</option>';
 
         uniquKeyGenColumns = '<button class="btn dropdown-toggle" type="button" id="uniquKeyGenColumns" data-bs-toggle="dropdown" aria-expanded="true" style="margin-top:2px; margin-left:20px; color:#000; width:450px;border: 1px solid #c9c5c5;"><span style="margin-right: 310px;">Select columns</span></button><ul class="dropdown-menu" aria-labelledby="uniquKeyGenColumns" style="width: 450px; position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(20px, 60px, 0px);" data-popper-placement="bottom-start"><li><a class="dropdown-item"><input class="form-check-input column-checkbox uniqueKeyGenChkBoxAll" type="checkbox"  style="margin-right: 10px;"><label class="form-check-label" for="checkbox">Select all</label></a></li>';
 
@@ -222,15 +234,18 @@ $(document).ready(function() {
         });
         // Populate dropdown with selected options
         selectedTableColumns.forEach(option => {
-            reconcileTableColumnsToSum+='<li><a class="dropdown-item"><input class="form-check-input column-checkbox columnsToSumChkBox" type="checkbox" name="reconcileTableColumnsToSum[]" value="'+option+'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'+option+'</label></a></li>';
+            // reconcileTableColumnsToSum+='<li><a class="dropdown-item"><input class="form-check-input column-checkbox columnsToSumChkBox" type="checkbox" name="reconcileTableColumnsToSum[]" value="'+option+'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'+option+'</label></a></li>';
+
+            reconcileTableColumnsToSum+='<option value='+option+'>'+option+'</option>';
 
             uniquKeyGenColumns+='<li><a class="dropdown-item"><input class="form-check-input column-checkbox uniqueKeyGenChkBox" type="checkbox" name="uniquKeyGenColumns[]" value="'+option+'" id="" style="margin-right: 10px;"><label class="form-check-label" for="checkbox">'+option+'</label></a></li>';
         });
+        reconcileTableColumnsToSum+='</select>';
         $('#uniqueKeyGenerationTitleId').show();
         $('#selectColumnsToSumTitleId').show();
         $('#reconcileTableColumnsToSumDiv').show();
         $('#uniquKeyGenColumns').html(uniquKeyGenColumns);
-        $('#reconcileTableColumnsToSum').html(reconcileTableColumnsToSum);
+        $('#reconcileTableColumnsToSumDiv').html(reconcileTableColumnsToSum);
     }
 
     //Display the unique key generation dropdown conditionally

@@ -15,7 +15,7 @@ try {
 } catch (PDOException $e) {
     $isTableExists =  false;
 }
-$columns =[];
+$columns = [];
 if (!empty($tableName) && $isTableExists) {
     try {
         $tableDataTypes = $tableName."_datatype";
@@ -33,7 +33,6 @@ if (!empty($tableName) && $isTableExists) {
         die("Something went wrong" . $e->getMessage().$e->getLine());
     }
 }
-
 include_once "header.php";
 ?>
 <link rel="stylesheet" href="styles/dashboard.css">

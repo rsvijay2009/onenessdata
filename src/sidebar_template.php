@@ -14,6 +14,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
     <a href="<?= WEBSITE_ROOT_PATH ?>home.php" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
             <div class="menu-item">
                 <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>home.php" style="color:#71B6FA; padding-left:13px;">Upload</a>
+                <a class="nav-link" href="<?= WEBSITE_ROOT_PATH ?>rename_table.php" style="color:#71B6FA; padding-left:13px;">Rename table</a>
             </div>
         <form name="sidebarForm" method="post">
             <input type="hidden" name="formName" value="sidebarForm">

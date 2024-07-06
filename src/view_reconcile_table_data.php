@@ -8,7 +8,7 @@ $tableName = $_REQUEST['table'] ?? null;
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name')");
+$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name', 'original_table_name')");
 $columnQuery->execute();
 $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 
@@ -24,7 +24,7 @@ $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
         <!-- Content Area -->
-        <div class="col-md-10">
+        <div class="col-md-9">
             <!-- Table Below Cards -->
             <div style="padding:10px;">
                 <h2 style="margin-bottom:25px;">Reconcile data of <?=$tableName?></h2>
@@ -41,7 +41,7 @@ $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
                             <?php foreach ($data as $row): ?>
                                 <tr>
                                     <?php foreach ($columns as $col): ?>
-                                        <td><?= htmlspecialchars($row[$col]) ?></td>
+                                        <td><?=$row[$col]?></td>
                                     <?php endforeach; ?>
                                 </tr>
                             <?php endforeach; ?>

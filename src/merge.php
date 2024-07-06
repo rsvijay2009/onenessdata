@@ -66,7 +66,7 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                     $projectId = $project['project_id'] ?? null;
 
                     if($projectId) {
-                        $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id) VALUES ('$newTableName', $projectId)");
+                        $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id, original_table_name) VALUES ('$newTableName', $projectId, '$newTableName')");
                         $stmt->execute();
                         $mergedtableId = $pdo->lastInsertId();
 
@@ -82,7 +82,7 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                             $stmt = $pdo->query($selectedFirstTable);
                             $selectedFirstTableRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                            insertIntoDynamicDatatypeTable($newTableName, $selectedFirstTableRows, $pdo);
+                            insertIntoDynamicDatatypeTable($newTableName, $newTableName, $selectedFirstTableRows, $pdo);
                             //create dynamic table to store dashboard data
                             createDynamicTableForDashboard($dashBoardTableName, $pdo);
                             insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);

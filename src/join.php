@@ -4,14 +4,6 @@ include_once "sidebar.php";
 include_once "header.php";
 $errorMsg = "";
 $successMsg = "";
-
-// PDO connection setup
-$pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-$sql = $pdo->prepare("SELECT name FROM tables_list");
-$sql->execute();
-$tables = $sql->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <style>
 .join-img-width {
@@ -73,7 +65,7 @@ $tables = $sql->fetchAll(PDO::FETCH_COLUMN);
                                 <select class='form-select' id='joinTable1' name='joinTable1' style="margin-right:20px;">
                                     <option value=''>Choose table to join</option>
                                     <?php foreach($tables as $table) {?>
-                                        <option value='<?=$table['name']?>'><?=$table['name']?></option>
+                                        <option value='<?=$table['name']?>'><?=$table['original_table_name']?></option>
                                     <?php }?>
                                 </select>
                             </div>
@@ -81,7 +73,7 @@ $tables = $sql->fetchAll(PDO::FETCH_COLUMN);
                                 <select class='form-select' id='joinTable2' name='joinTable2' style="margin-right:20px;">
                                     <option value=''>Choose table to join</option>
                                     <?php foreach($tables as $table) {?>
-                                        <option value='<?=$table['name']?>'><?=$table['name']?></option>
+                                        <option value='<?=$table['name']?>'><?=$table['original_table_name']?></option>
                                     <?php }?>
                                 </select>
                             </div>

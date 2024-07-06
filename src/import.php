@@ -46,6 +46,8 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 return "`$col` TEXT";
             }
         }, $selectedColumns);
+        $columnDefinitions[] = "`original_table_name` TEXT";
+        $originalTableName = $tableName;
         $tableName = $projectName."_".$tableName;
         $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
@@ -58,16 +60,18 @@ if (($handle = fopen($csvFile, "r")) !== false) {
     }
 
     if ($isTableCreated) {
-        $sql = "INSERT INTO tables_list (name, project_id) VALUES (:name, :project_id)";
+        $sql = "INSERT INTO tables_list (name, project_id, original_table_name) VALUES (:name, :project_id, :original_table_name)";
 
         $tableName = strtolower($tableName);
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":name", $tableName);
         $stmt->bindParam(":project_id", $projectId);
+        $stmt->bindParam(":original_table_name", $originalTableName);
         $stmt->execute();
         $tableId = $pdo->lastInsertId();
 
         unset($selectedColumns[0]);
+        $selectedColumns[] = 'original_table_name';
         $insertColumns = implode(", ", array_map(function ($string) {
             $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
             $col = strtolower($stringWithoutSpace);
@@ -88,6 +92,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             }
             $insertData[] = $tableId;
             $insertData[] = $tableName;
+            $insertData[] = $originalTableName;
             $insertStmt->execute($insertData);
         }
 
@@ -96,7 +101,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $recordsCount = $stmt->fetchColumn();
 
         if($recordsCount == 0) {
-            deleteAllTableRelatedData($tableId, $pdo);
+            deleteAllTableRelatedData($pdo, $tableId);
             $tableId = null;
         }
 
@@ -134,7 +139,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
 
             if($isDataTypeTableCreated) {
                 $dashBoardTableName = $tableName."_dashboard";
-                insertIntoDynamicDatatypeTable($tableName, $tableDatatypeinfo, $pdo);
+                insertIntoDynamicDatatypeTable($tableName, $originalTableName, $tableDatatypeinfo, $pdo);
 
                 //create dynamic table to store dashboard data
                 createDynamicTableForDashboard($dashBoardTableName, $pdo);

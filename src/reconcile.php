@@ -5,13 +5,6 @@ include_once "sidebar.php";
 
 $errorMsg = "";
 $successMsg = "";
-// PDO connection setup
-$pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-$sql = $pdo->prepare("SELECT name FROM tables_list");
-$sql->execute();
-$tables = $sql->fetchAll(PDO::FETCH_COLUMN);
 
 include_once "header.php";
 ?>
@@ -39,7 +32,7 @@ include_once "header.php";
               <select class='form-select' id='tablesList' name='tablesList' style="margin-left:20px;">
                 <option value=''>Choose table</option>
               <?php foreach($tables as $table) {?>
-                  <option value='<?=$table['name']?>'> <?=$table['name']?> </option> <?php }?>
+                  <option value='<?=$table['name']?>'> <?=$table['original_table_name']?> </option> <?php }?>
               </select>
             </div>
             <div style="width:50%;">
@@ -72,7 +65,7 @@ include_once "header.php";
               <select class='form-select' id='selectedTableTocompare1' name='selectedTableTocompare1' style="margin-left:20px; width:90%">
                 <option value=''>Choose table A</option>
                   <?php foreach($tables as $table) {?>
-                    <option value='<?=$table['name']?>'> <?=$table['name']?> </option> <?php }?>
+                    <option value='<?=$table['name']?>'> <?=$table['original_table_name']?> </option> <?php }?>
               </select>
             </div>
             <div id="selectTableBForCompare" style="display:none;">
@@ -81,7 +74,7 @@ include_once "header.php";
                   <select class='form-select' id='selectedTableTocompare2' name='selectedTableTocompare2' style="margin-left:20px;">
                     <option value=''>Choose table B</option>
                       <?php foreach($tables as $table) {?>
-                        <option value='<?=$table['name']?>'> <?=$table['name']?> </option> <?php }?>
+                        <option value='<?=$table['name']?>'><?=$table['original_table_name']?></option> <?php }?>
                   </select>
                 </div>
               </div>

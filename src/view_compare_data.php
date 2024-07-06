@@ -56,7 +56,7 @@ include_once "header.php";
                 <?php foreach ($comparedDataItems as $item): ?>
                     <tr>
                         <?php foreach ($tableColumns as $column): ?>
-                            <td> <?= htmlspecialchars($item[$column]) ?></td>
+                            <td> <?= $item[$column] ?></td>
                         <?php endforeach; ?>
                     </tr>
                 <?php endforeach; ?> </tbody>

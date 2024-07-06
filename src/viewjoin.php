@@ -59,12 +59,15 @@ if($joinType == 'FULL JOIN') {
 }
 $joinQuery->execute();
 $results = $joinQuery->fetchAll(PDO::FETCH_ASSOC);
-$saveTableName = 'join_data_'.time();
 
 if(isset($_POST['saveTable']) && $_POST['saveTable'] == true) {
     $saveTableName = 'join_data_'.time();
     $createTableSQL = "CREATE TABLE $saveTableName AS $joinQueryStr";
     $pdo->exec($createTableSQL);
+
+    //Insert the table name into other_tables
+    $createTableSQL = "CREATE TABLE $saveTableName AS $joinQueryStr";
+    $pdo->exec("INSERT INTO other_tables (name) VALUES('$saveTableName')");
     $sucessMsg = 'Data saved successfully';
 }
 include_once "header.php";

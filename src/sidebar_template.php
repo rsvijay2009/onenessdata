@@ -9,7 +9,8 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
 <div id="notification" class="<?=$notificationClassName?>">
     <!-- Message will be inserted here dynamically -->
 </div>
-<div class="<?=$sideBarWithDesign?> bg-light">
+<?php if($currentFileName == 'view_reconcile_table_data.php') { ?>  <div class="<?=$sideBarWithDesign?> bg-light" style="width:17%;">
+<?php } else {?>  <div class="<?=$sideBarWithDesign?> bg-light"> <?php }?>
     <div class="d-flex flex-column flex-shrink-0 p-3" style="height: 100vh;">
     <a href="<?= WEBSITE_ROOT_PATH ?>home.php" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
             <div class="menu-item">
@@ -20,6 +21,8 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
             <input type="hidden" name="formName" value="sidebarForm">
             <input type="hidden" name="deleteProjectId" id="deleteProjectId" value="0">
             <input type="hidden" name="deleteTableId" id="deleteTableId" value="0">
+            <input type="hidden" name="deleteTableByName" id="deleteTableByName" value="">
+
             <?php foreach ($projects as $project) { ?>
                 <div class="menu-item">
                     <span class="d-flex justify-content-between align-items-center">
@@ -28,7 +31,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                         <?= ucfirst($project["name"] )?> <span class="badge" style="font-weight:bold;font-size:20px;color:black;"><?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "-" : "+"?></span></a>
                     </span>
                     <?php
-                    $sql ="SELECT id, name FROM tables_list where  project_id = :projectId";
+                    $sql ="SELECT id, name, original_table_name FROM tables_list where  project_id = :projectId";
                     $stmt = $pdo->prepare($sql);
                     $stmt->bindParam(":projectId", $project["id"], PDO::PARAM_STR);
                     $stmt->execute();
@@ -36,12 +39,11 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     ?>
                     <div class="menu collapse <?=(isset($_REQUEST['project']) && $_REQUEST['project'] == $project["name"]) ? "show" : ""?>" id="<?=$project["name"]?>">
                         <?php foreach ($tables as $table) {
-                            $tblName = str_replace($project["name"]."_", "",$table["name"]);
-                            $tblName = trimTableLength($tblName);
+                            $tblName = trimTableLength($table["original_table_name"]);
                             ?>
-                            <ul class="nav flex-column p-1">
+                            <ul class="nav flex-column p-1" style="width:220px;">
                                     <li class="nav-item"  draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
-                                        <a href="dashboard.php?table_name=<?=$table["name"]?>&project=<?=$project["name"]?>" style="text-decoration:none;padding-left:14px;<?php if(isset($_REQUEST['table_name']) && strtolower($_REQUEST['table_name']) == $table["name"] || isset($_REQUEST['table']) && strtolower($_REQUEST['table']) == $table["name"]) {?> color:#D828DA; font-weight:bold;<?php } else {?>color:black<?php } ?>" role="button"><?=ucfirst($tblName)?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                        <a href="dashboard.php?table_name=<?=$table["name"]?>&project=<?=$project["name"]?>" style="text-decoration:none;padding-left:14px;<?php if(isset($_REQUEST['table_name']) && strtolower($_REQUEST['table_name']) == strtolower($table["name"]) || isset($_REQUEST['table']) && strtolower($_REQUEST['table']) == strtolower($table["name"])) {?> color:#D828DA; font-weight:bold;<?php } else {?>color:black<?php } ?>" role="button"><?=ucfirst($tblName)?> <a onclick="confirmTableDeletion('<?= $table['id'] ?>', '<?= $table['name'] ?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                                         <span id="orgTableName" style="display:none;"><?=$table['name']?></span>
                                     </a>
                                     </li>
@@ -82,6 +84,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                             <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
                                 <a href="view_join_table_data.php?table=<?=$savedJoinTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($savedJoinTable['TABLE_NAME'])?>
                                 </a>
+                                <a onclick="confirmTableDeletionByName('<?=$savedJoinTable['TABLE_NAME']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                             </li>
                         </ul>
                     <?php } ?>
@@ -111,6 +114,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                             <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
                                 <a href="view_reconcile_table_data.php?table=<?=$reconcileTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($reconcileTable['TABLE_NAME'])?>
                                 </a>
+                                <a onclick="confirmTableDeletionByName('<?=$reconcileTable['TABLE_NAME']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                             </li>
                         </ul>
                     <?php } ?>
@@ -120,3 +124,4 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
     </div>
 </div>
 <script src="scripts/sidebar.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">

@@ -13,11 +13,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['formName']) && $_POST[
     $projectId = $_POST['deleteProjectId'] ?? 0;
     $tableId = $_POST['deleteTableId'] ?? 0;
 
+    if(isset($_POST['deleteTableByName']) && !empty($_POST['deleteTableByName'])) {
+        try {
+            $tableName = $_POST['deleteTableByName'];
+            $sql = "DROP TABLE IF EXISTS $tableName";
+            $pdo->exec($sql);
+
+            $pdo->exec("DELETE FROM other_tables WHERE name = '$tableName'");
+
+            $response['notificationClassName'] = 'notification-success-banner';
+            $response['userNotificationMsg'] = "Table deleted successfully";
+            $actionType = 'table';
+        } catch (\PDOException $e) {
+            $response['notificationClassName'] = 'notification-error-banner';
+            $response['userNotificationMsg'] =  "Something went wrong";
+            $actionType = 'table';
+        }
+    }
     if($projectId > 0) {
-        $response = deleteAllProjectRelatedData($projectId, $pdo);
+        $response = deleteAllProjectRelatedData($pdo, $projectId);
         $actionType = 'project';
     } else if($tableId > 0) {
-        $response = deleteAllTableRelatedData($tableId, $pdo);
+        $response = deleteAllTableRelatedData($pdo, $tableId);
         $actionType = 'table';
     }
 
@@ -26,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['formName']) && $_POST[
 
     header("Location:home.php?msg=$actionType");
 }
-
 $stmt = $pdo->prepare("SELECT id, name FROM projects");
 $stmt->execute();
 $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);

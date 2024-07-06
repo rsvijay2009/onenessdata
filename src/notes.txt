@@ -50,3 +50,15 @@ new project under reconcile - Done
 join - save table
 
 reconcile - save table - display data
+
+
+Rename tables
+----------------
+option to select project and then table name 
+
+option to delete join and reconcile tables
+
+
+If we show the table name without concat project name_ then user will confuse if they have same table name for two differet projects
+
+and also we need to show duplicate table names in drop down as well

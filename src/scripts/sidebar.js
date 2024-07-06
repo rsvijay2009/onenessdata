@@ -48,5 +48,13 @@ function confirmTableDeletion(tableId, tableName) {
     }
 }
 
+function confirmTableDeletionByName(tableName) {
+    if (confirm('Are you sure you want to delete '+ tableName + ' table?')) {
+        const fullURL = window.location.pathname;
+        document.getElementById('deleteTableByName').value = tableName;
+        window.sidebarForm.submit();
+    }
+}
+
 
 

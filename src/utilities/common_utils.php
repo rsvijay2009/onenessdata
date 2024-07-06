@@ -1,6 +1,6 @@
 <?php
 
-function deleteAllProjectRelatedData($projectId = 0, $pdo)
+function deleteAllProjectRelatedData($pdo, $projectId = 0)
 {
     if($projectId) {
         //Call the stored procedure to delete all the project related data
@@ -75,7 +75,7 @@ function deleteAllProjectRelatedData($projectId = 0, $pdo)
     }
 }
 
-function deleteAllTableRelatedData($tableId = 0, PDO $pdo)
+function deleteAllTableRelatedData(PDO $pdo, $tableId = 0)
 {
     if($tableId) {
         //Call the stored procedure to delete all the table related data
@@ -157,6 +157,7 @@ function createDynamicTableTypes($tableName, $pdo)
             id INT AUTO_INCREMENT PRIMARY KEY,
             table_id INT NOT NULL,
             table_name VARCHAR(255) NOT NULL,
+            original_table_name VARCHAR(255) NOT NULL,
             column_name  VARCHAR(255) NOT NULL,
             datatype_id INT NOT NULL,
             datatype VARCHAR(255) NOT NULL,
@@ -217,6 +218,7 @@ function createDynamicTableForDataVerification($tableName, $pdo)
             project_id INT NOT NULL,
             table_id INT NOT NULL,
             table_name VARCHAR(255) NOT NULL,
+            original_table_name VARCHAR(255) NOT NULL,
             column_name  VARCHAR(255) NOT NULL,
             master_primary_key INT NOT NULL,
             ignore_flag INT NOT NULL DEFAULT 0,
@@ -238,11 +240,11 @@ function calculateDataQualityStatPercentage($oveallCount, $value)
     return ($value / 100 ) * 100;
 }
 
-function insertIntoDynamicDatatypeTable($tableName, $dataToInsert, $pdo)
+function insertIntoDynamicDatatypeTable($tableName, $originalTableName, $dataToInsert, $pdo)
 {
     $dataTypeTableName = $tableName.'_datatype';
     $dataTypeTableName = convertMultipleUnderscoresIntoSingle($dataTypeTableName);
-    $insertSql = "INSERT INTO $dataTypeTableName (table_id, table_name, column_name, datatype_id, datatype, data_quality, uniqueness) VALUES (:table_id, :table_name, :column_name, :datatype_id, :datatype, :data_quality, :uniqueness)";
+    $insertSql = "INSERT INTO $dataTypeTableName (table_id, table_name, original_table_name, column_name, datatype_id, datatype, data_quality, uniqueness) VALUES (:table_id, :table_name, :original_table_name, :column_name, :datatype_id, :datatype, :data_quality, :uniqueness)";
     $stmt = $pdo->prepare($insertSql);
 
     foreach ($dataToInsert as $row) {
@@ -250,6 +252,7 @@ function insertIntoDynamicDatatypeTable($tableName, $dataToInsert, $pdo)
         $dataUniqueness = mt_rand(50, 100);
         $stmt->bindParam(':table_id', $row['table_id']);
         $stmt->bindParam(':table_name', $tableName);
+        $stmt->bindParam(':original_table_name', $originalTableName);
         $stmt->bindParam(':column_name', $row['column_name']);
         $stmt->bindParam(':datatype_id', $row['datatype_id']);
         $stmt->bindParam(':datatype', $row['datatype']);
@@ -304,4 +307,31 @@ function getColumnNames($pdo, $table)
 function trimTableLength($tableName)
 {
     return (strlen($tableName) > 19) ? substr($tableName, 0, 19) : $tableName;
+}
+
+function updateOriginalTableNameColumnInRequiredTables($pdo, $oldTableName, $newTableName, $dbName)
+{
+    try {
+        $newTableName = strtolower($newTableName);
+        $dataTypeTableName = $newTableName.'_datatype';
+        $dataVerificationTableName = $newTableName.'_data_verification';
+
+        $pdo->exec("UPDATE tables_list SET name = '$newTableName', original_table_name = '$newTableName' WHERE name = '$newTableName'");
+
+        $tables = [
+            $newTableName.'_datatype'
+        ];
+        foreach ($tables as $table) {
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = :db AND table_name = :table");
+            $stmt->execute(['db' => $dbName, 'table' => $table]);
+
+            // Fetch the result
+            $tableExists = $stmt->fetchColumn();
+            if ($tableExists) {
+                $pdo->exec("UPDATE $table SET table_name = '$newTableName', original_table_name = '$newTableName' WHERE table_name = '$newTableName'");
+            }
+        }
+    } catch (PDOException $e) {
+        die($e->getMessage());
+    }
 }

@@ -54,7 +54,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         }, $selectedColumns);
         $columnDefinitions[] = "`original_table_name` TEXT";
         $originalTableName = $tableName;
-        $tableName = $projectName . "_" . $tableName;
+        $tableName = $projectName."_".$tableName;
         $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);

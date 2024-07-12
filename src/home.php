@@ -10,6 +10,10 @@ if ($requestErr == "table") {
     $error = "Table name already exist. please try some other name";
 } elseif ($requestErr == "project") {
     $error = "Project name already exist. please try some other name";
+} elseif ($requestErr == "error") {
+    $error = "Something went wrong. Please try again";
+} elseif($requestErr == 'invalid_table') {
+    $error = "Invalid table name. Please use only letters, numbers, and underscores, and start with a letter or underscore.";
 }
 if($requestSuccessMsg == "table") {
     $userNotificationMsg = 'Table deleted successfully';
@@ -17,6 +21,9 @@ if($requestSuccessMsg == "table") {
 } else if($requestSuccessMsg == "project") {
     $userNotificationMsg = 'Project deleted successfully';
     $notificationClassName = 'notification-success-banner';
+} else if($requestSuccessMsg == "error") {
+    $userNotificationMsg = 'Something went wrong. Please try again';
+    $notificationClassName = 'notification-error-banner';
 }
 include_once "header.php";
 ?>

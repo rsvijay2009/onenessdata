@@ -18,71 +18,95 @@ try {
     $projects = [];
 }
 if($oldTableNameStr && $newTableName) {
-    $tableTypeArr = explode('###', $oldTableNameStr);
-    $oldTableName = trim($tableTypeArr[0]);
-    $tableType = trim($tableTypeArr[1]);
-
-    $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
-    $stmt->execute([$newTableName]);
-    if ($stmt->rowCount() > 0) {
-        $messageId =  0;
-        $errorMessageColor = 'red';
-        $message =  "Error: Table with name '$newTableName' already exists.";
+    // Validate the table name
+    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $newTableName)) {
+        $errorMessageColor = '#F01815';
+        $message =  "Invalid table name. Please use only letters, numbers, and underscores, and start with a letter or underscore.";
     } else {
-        $renameSql = "RENAME TABLE $oldTableName TO $newTableName";
-        $pdo->exec($renameSql);
-        
-        if ($tableType == 'main_table') {
-            //check and update the table name in table_list also
-            $updateTable = "UPDATE tables_list SET name = '$newTableName' WHERE name = '$oldTableName'";
-            $pdo->exec($updateTable);
-            $newTableNametoLower = strtolower($newTableName);
-            $oldTableNametoLower = strtolower($oldTableName);
+        $newTableName = trim($newTableName);
+        $tableTypeArr = explode('###', $oldTableNameStr);
+        $oldTableName = trim($tableTypeArr[0]);
+        $tableType = trim($tableTypeArr[1]);
 
-            $pdo->exec("UPDATE $newTableName SET original_table_name = '$newTableNametoLower', table_name = '$newTableNametoLower' WHERE table_name = '$oldTableNametoLower'");
+        // echo '<pre>';
+        // print_r($tableTypeArr);
+        // exit;
 
-            $oldTableNameDatatype = $oldTableName.'_datatype';
-            $oldTableNameDataVerification = $oldTableName.'_data_verification';
+        // Check if the table already exists
+        $checkTableQuery = $pdo->prepare("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = :dbname AND table_name = :tableName");
+        $checkTableQuery->bindParam(':dbname', $dbname);
+        $checkTableQuery->bindParam(':tableName', $newTableName);
+        $checkTableQuery->execute();
+        $tableExists = $checkTableQuery->fetchColumn();
 
-            $updateOldTableDatatype = "UPDATE $oldTableNameDatatype SET table_name = '$newTableName' WHERE table_name = '$oldTableName'";
-            $pdo->exec($updateOldTableDatatype);
-
-            $updateOldTableDataVerification = "UPDATE $oldTableNameDataVerification SET table_name = '$newTableName' WHERE table_name = '$oldTableName'";
-            $pdo->exec($updateOldTableDataVerification);
-
-            $oldTableNameList = [
-                '_datatype' => $oldTableName.'_datatype',
-                '_dashboard' =>  $oldTableName.'_dashboard',
-                '_data_verification' => $oldTableName.'_data_verification'
-            ];
-            foreach ($oldTableNameList as $key => $table) {
-                $checkTableQuery = "SHOW TABLES LIKE :table";
-                $stmt = $pdo->prepare($checkTableQuery);
-                $stmt->execute(['table' => $table]);
-                $tableNameToUpdate = $newTableName.$key;
-
-                if ($stmt->rowCount() > 0) {
-                    $renameTableQuery = "ALTER TABLE `$table` RENAME TO `$tableNameToUpdate`";
-                    $pdo->query($renameTableQuery);
-                }
-            }
+        if ($tableExists) {
+            $messageId =  0;
+            $errorMessageColor = 'red';
+            $message =  "Error: Table with name '$newTableName' already exists.";
         } else {
-            $pdo->exec("UPDATE other_tables SET name = '$newTableName' WHERE name = '$oldTableName'");
+            $renameSql = "RENAME TABLE $oldTableName TO $newTableName";
+            $pdo->exec($renameSql);
+            if ($tableType == 'main' || $tableType == 'merge') {
+                //check and update the table name in table_list also
+                $updateTable = "UPDATE tables_list SET name = '$newTableName', original_table_name = '$newTableName' WHERE name = '$oldTableName'";
+                $pdo->exec($updateTable);
+                $newTableNametoLower = strtolower($newTableName);
+                $oldTableNametoLower = strtolower($oldTableName);
+
+                if($tableType == 'main') {
+                    $pdo->exec("UPDATE $newTableName SET original_table_name = '$newTableNametoLower', table_name = '$newTableNametoLower' WHERE table_name = '$oldTableNametoLower'");
+                }
+
+                $oldTableNameDatatype = $oldTableName.'_datatype';
+                $oldTableNameDataVerification = $oldTableName.'_data_verification';
+
+                $updateOldTableDatatype = "UPDATE $oldTableNameDatatype SET table_name = '$newTableName', original_table_name = '$newTableName' WHERE table_name = '$oldTableName'";
+                $pdo->exec($updateOldTableDatatype);
+
+                $updateOldTableDataVerification = "UPDATE $oldTableNameDataVerification SET table_name = '$newTableName', original_table_name = '$newTableName' WHERE table_name = '$oldTableName'";
+                $pdo->exec($updateOldTableDataVerification);
+
+                $oldTableNameList = [
+                    '_datatype' => $oldTableName.'_datatype',
+                    '_dashboard' =>  $oldTableName.'_dashboard',
+                    '_data_verification' => $oldTableName.'_data_verification'
+                ];
+                foreach ($oldTableNameList as $key => $table) {
+                    $tableNameToUpdate = $newTableName.$key;
+
+                    $checkTableQuery = $pdo->prepare("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = :dbname AND table_name = :tableName");
+
+                    $checkTableQuery->bindParam(':dbname', $dbname);
+                    $checkTableQuery->bindParam(':tableName', $table);
+                    $checkTableQuery->execute();
+                    $tableExists = $checkTableQuery->fetchColumn();
+
+                    if ($tableExists) {
+                        $renameTableQuery = "ALTER TABLE `$table` RENAME TO `$tableNameToUpdate`";
+                        $pdo->query($renameTableQuery);
+                    }
+                }
+            } else {
+                $pdo->exec("UPDATE tables_list SET name = '$newTableName', original_table_name = '$newTableName' WHERE name = '$oldTableName'");
+            }
+
+            //Update the original_table_name column in all the required tables
+            updateOriginalTableNameColumnInRequiredTables($pdo, $oldTableName, $newTableName, $dbname);
+
+            $messageId =  1;
+            $errorMessageColor = '#258B27';
+            $message =  "Table '$oldTableName' renamed to '$newTableName' successfully.";
         }
-
-        //Update the original_table_name column in all the required tables
-        updateOriginalTableNameColumnInRequiredTables($pdo, $oldTableName, $newTableName, $dbname);
-
-        $messageId =  1;
-        $errorMessageColor = '#258B27';
-        $message =  "Table '$oldTableName' renamed to '$newTableName' successfully.";
     }
 }
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
 <div class="container-fluid">
     <div class="row">
-        <?php include_once "sidebar_template.php"; ?>
+        <?php
+        include_once "header.php";
+        include_once "sidebar_template.php";
+         ?>
         <!-- Content Area -->
         <?php if(empty($projects)) { ?>
         <div class="col-md-10">
@@ -94,7 +118,7 @@ if($oldTableNameStr && $newTableName) {
                 <h2 style="margin-bottom:25px;">Rename table</h2>
                 <p class="notificationMsg" id="notificationMsg" style="color:<?=$errorMessageColor?>;padding-bottom:10px;font-weight:bold;"><?=$message?></p>
                 <?php if(!empty($projects)) { ?>
-                    <form action="rename_table.php" method="post" enctype="multipart/form-data">
+                    <form action="rename_table.php" method="post" onsubmit="return validateForm()">
                         <div class="mb-3">
                             <label for="projectName" class="form-label">Choose project</label>
                             <select class="form-select" id="projectName" name="projectName" required>
@@ -132,14 +156,22 @@ if($oldTableNameStr && $newTableName) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
+function validateForm() {
+    var tableName = document.getElementById("newTableName").value;
+    var regex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
+    if (!regex.test(tableName)) {
+        alert("Invalid table name. Please use only letters, numbers, and underscores, and start with a letter or underscore.");
+        return false;
+    }
+    return true;
+}
 $(document).ready(function() {
     if ($('#notificationMsg').html().trim() !== '') {
         setTimeout(function() {
             $('#notificationMsg').hide();
         }, 2000);
     }
-
     $("#projectName").change(function(e) {
         const projectId = e.target.value;
         console.log(projectId);
@@ -156,7 +188,9 @@ $(document).ready(function() {
                 // Loop through the array and extract values in sets of three
                 if (Array.isArray(data)) {
                     data.forEach(item => {
-                        html+='<option value="'+item.name+'###'+item.table_type+'">'+item.original_table_name+'</option>';
+                        tableName = (item.original_table_name.length > 19) ? item.original_table_name.substring(0, 19) : item.original_table_name;
+                        tableName = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+                        html+='<option value="'+item.name+'###'+item.table_type+'">'+tableName+'</option>';
                     });
                     $("#oldTableName").html(html);
                 }

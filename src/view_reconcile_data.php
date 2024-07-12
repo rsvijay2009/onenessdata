@@ -50,6 +50,7 @@ if(isset($_POST['saveTable']) && $_POST['saveTable'] == true) {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $saveTableName = 'reconcile_data_'.time();
+
     if(isset($uniqueKeyGenColumns) && !empty($uniqueKeyGenColumns)) {
         $decodedString = urldecode($uniqueKeyGenColumns);
         $parts = explode(',', $decodedString);
@@ -69,6 +70,8 @@ if(isset($_POST['saveTable']) && $_POST['saveTable'] == true) {
 
     $updateQuery = "UPDATE $saveTableName SET original_table_name = '$table'";
     $pdo->exec($updateQuery);
+
+    $pdo->exec("INSERT INTO tables_list (name, original_table_name, table_type) VALUES('$saveTableName', '$saveTableName', 'reconcile')");
     $sucessMsg = 'Prepared data saved successfully';
 }
 ?>
@@ -136,7 +139,7 @@ $(document).ready(function() {
     setTimeout(function() {
         var notificationMsgDiv = document.getElementById('notificationMsg');
         notificationMsgDiv.style.display = 'none';
-    }, 3000);
+    }, 2000);
 });
 </script>
 </body>

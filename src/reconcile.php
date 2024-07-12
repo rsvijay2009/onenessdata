@@ -12,7 +12,9 @@ include_once "header.php";
 </head>
 <body>
   <div class="container-fluid">
-    <div class="row"> <?php include_once "sidebar_template.php"; ?> <input type="hidden" id="selectedTable" name="selectedTable" value="">
+    <div class="row">
+      <?php include_once "sidebar_template.php"; ?>
+      <input type="hidden" id="selectedTable" name="selectedTable" value="">
       <input type="hidden" id="selectedColumns" name="selectedColumns" value="">
       <input type="hidden" id="selectedColumnsToSum" name="selectedColumnsToSum" value="">
       <input type="hidden" id="selectedColumnsForUserKeyGen" name="selectedColumnsForUserKeyGen" value="">
@@ -142,10 +144,12 @@ $(document).ready(function() {
     });
     $('#prepareDiv').click(function(){
         $('#tableListDropDown').show();
+        $('#compareDiv').hide();
     });
     $('#compareDiv').click(function(){
         $('#selectTableAForCompare').show();
         $('#selectTableBForCompare').show();
+        $('#prepareDiv').hide();
     });
     $('#reconcileTableColumns1').on('change', '.tableColsChkBox', function() {
         updateDropdown();

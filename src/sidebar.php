@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['formName']) && $_POST[
             $sql = "DROP TABLE IF EXISTS $tableName";
             $pdo->exec($sql);
 
-            $pdo->exec("DELETE FROM other_tables WHERE name = '$tableName'");
+            $pdo->exec("DELETE FROM tables_list WHERE name = '$tableName'");
 
             $response['notificationClassName'] = 'notification-success-banner';
             $response['userNotificationMsg'] = "Table deleted successfully";

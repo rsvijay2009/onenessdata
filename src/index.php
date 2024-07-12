@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Login</button>
                 </form>
-                <?php if (isset($error)) { echo "<p class='text-danger text-center mt-3'>$error</p>"; } ?>
+                <?php if (isset($error)) { echo "<p class='text-danger text-center mt-3' style='font-weight:bold'>$error</p>"; } ?>
             </div>
         </div>
     </div>

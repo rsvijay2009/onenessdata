@@ -8,6 +8,9 @@ $projectName = $_POST["projectName"] ?? "";
 $projectId = $_POST["projectList"] ?? "";
 
 if (!empty($tableName)) {
+    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $tableName)) {
+        $error = "invalid_table";
+    }
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :dbname AND TABLE_NAME = :tablename");
     $stmt->bindParam(':dbname', $dbname);
     $stmt->bindParam(':tablename', strtolower($tableName));

@@ -56,6 +56,10 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                 $newTableName = (strlen($newTableName) > 64) ? substr($newTableName, 0, 64) : $newTableName;
                 $pdo->exec("CREATE TABLE `$newTableName` AS $unionSQL");
 
+                //Delete table_name & original_table_column from merged table
+                $pdo->exec("ALTER TABLE `$newTableName` DROP COLUMN table_name");
+                $pdo->exec("ALTER TABLE `$newTableName` DROP COLUMN original_table_name");
+
                 //Insert a new row for mergerd table in tables_list table
                 $firstTableName = $tableNameList[0] ?? null;
 
@@ -66,7 +70,7 @@ if (isset($_POST["selected_tables"]) && $_POST["selected_tables"] != "") {
                     $projectId = $project['project_id'] ?? null;
 
                     if($projectId) {
-                        $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id, original_table_name) VALUES ('$newTableName', $projectId, '$newTableName')");
+                        $stmt = $pdo->prepare("INSERT INTO `tables_list` (name, project_id, original_table_name, table_type) VALUES ('$newTableName', $projectId, '$newTableName', 'merge')");
                         $stmt->execute();
                         $mergedtableId = $pdo->lastInsertId();
 

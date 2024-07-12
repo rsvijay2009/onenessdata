@@ -9,7 +9,7 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
 <div id="notification" class="<?=$notificationClassName?>">
     <!-- Message will be inserted here dynamically -->
 </div>
-<?php if($currentFileName == 'view_reconcile_table_data.php') { ?>  <div class="<?=$sideBarWithDesign?> bg-light" style="width:17%;">
+<?php if($currentFileName == 'view_reconcile_table_data.php' || $currentFileName == 'rename_table.php') { ?>  <div class="<?=$sideBarWithDesign?> bg-light" style="width:17%;">
 <?php } else {?>  <div class="<?=$sideBarWithDesign?> bg-light"> <?php }?>
     <div class="d-flex flex-column flex-shrink-0 p-3" style="height: 100vh;">
     <a href="<?= WEBSITE_ROOT_PATH ?>home.php" style="cursor:pointer; text-decoration:none;"><h5 class="logo-data">Onness Data</h5></a>
@@ -61,11 +61,12 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
             <?php } ?>
             <a class="nav-link" style="color:#71B6FA;margin-left:-3px;" href="merge.php">Merge</a>
             <?php
-                $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
-                AND table_name LIKE 'join%'");
+                $sql ="SELECT id, name, original_table_name FROM tables_list where  table_type = :table_type";
+                $stmt = $pdo->prepare($sql);
+                $table_type = 'join';
+                $stmt->bindParam(":table_type", $table_type, PDO::PARAM_STR);
                 $stmt->execute();
                 $savedJoinTables = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                $savedJoinTableCount = count($savedJoinTables);
             ?>
             <div class="menu-item">
                 <span class="d-flex justify-content-between align-items-center">
@@ -82,20 +83,21 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     <?php foreach ($savedJoinTables as $savedJoinTable) {?>
                         <ul class="nav flex-column p-1">
                             <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
-                                <a href="view_join_table_data.php?table=<?=$savedJoinTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($savedJoinTable['TABLE_NAME'])?>
+                                <a href="view_join_table_data.php?table=<?=$savedJoinTable['name']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength(ucfirst($savedJoinTable['name']))?>
                                 </a>
-                                <a onclick="confirmTableDeletionByName('<?=$savedJoinTable['TABLE_NAME']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                <a onclick="confirmTableDeletionByName('<?=$savedJoinTable['name']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                             </li>
                         </ul>
                     <?php } ?>
                 </div>
             </div>
             <?php
-                $stmt = $pdo->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = '$dbname'
-                AND table_name LIKE 'reconcile_%' OR table_name LIKE 'compare_%'");
+                $sql ="SELECT id, name, original_table_name FROM tables_list where  table_type = :table_type";
+                $stmt = $pdo->prepare($sql);
+                $table_type = 'reconcile';
+                $stmt->bindParam(":table_type", $table_type, PDO::PARAM_STR);
                 $stmt->execute();
                 $reconcileTables = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                $tableCount = count($reconcileTables);
             ?>
             <div class="menu-item">
                 <span class="d-flex justify-content-between align-items-center">
@@ -112,9 +114,9 @@ $sideBarWithDesign = ($currentFileName == 'merge.php') ? 'col-md-2' : 'col-md-2'
                     <?php foreach ($reconcileTables as $reconcileTable) {?>
                         <ul class="nav flex-column p-1">
                             <li class="nav-item" draggable="true" ondragstart="drag(event, this)" style="max-width:215px; word-wrap:break-word;">
-                                <a href="view_reconcile_table_data.php?table=<?=$reconcileTable['TABLE_NAME']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength($reconcileTable['TABLE_NAME'])?>
+                                <a href="view_reconcile_table_data.php?table=<?=$reconcileTable['name']?>" style="text-decoration:none;padding-left:14px;color:black" role="button"><?=trimTableLength(ucfirst($reconcileTable['name']))?>
                                 </a>
-                                <a onclick="confirmTableDeletionByName('<?=$reconcileTable['TABLE_NAME']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                <a onclick="confirmTableDeletionByName('<?=$reconcileTable['name']?>')" style="cursor:pointer;"><i class="fa fa-trash" aria-hidden="true"></i></a>
                             </li>
                         </ul>
                     <?php } ?>

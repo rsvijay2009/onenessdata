@@ -22,11 +22,36 @@ if(isset($_REQUEST) && !empty($_REQUEST['selectedTablesForCompare']) && !empty($
     $compareColumn1 = $selectedColumnsToCompareArr[0];
     $compareColumn2 = $selectedColumnsToCompareArr[1];
 
-    $stmt = $pdo->prepare("CALL CompareTables('$table1', '$table2', '$relationship1', '$relationship2', '$compareColumn1', '$compareColumn2')");
+    $stmt = $pdo->query("SELECT DISTINCT $relationship1 FROM $table1
+        UNION
+        SELECT DISTINCT $relationship2 FROM  $table2
+    ");
     $stmt->execute();
     $comparedDataItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $tableColumns = array_keys($comparedDataItems[0]) ?? [];
-    //$successMsg = 'Compared data saved successfully';
+    $saveTableName = 'compare_data_'.time();
+}
+
+$successMsg = '';
+if(isset($_POST['saveTable']) && $_POST['saveTable'] == true) {
+    $createTableSQL = "CREATE TABLE $saveTableName (
+      relationship_key VARCHAR(255),
+      tableA_$relationship1 VARCHAR(255),
+      tableB_$relationship2 VARCHAR(255),
+      difference VARCHAR(255)
+    )";
+    $pdo->exec($createTableSQL);
+
+    //Insert data into compare table
+    $insertSql = "INSERT INTO $saveTableName (relationship_key)
+      SELECT DISTINCT $relationship1 FROM $table1
+      UNION
+      SELECT DISTINCT $relationship2 FROM $table2
+      ";
+    $pdo->exec($insertSql);
+
+    $pdo->exec("INSERT INTO tables_list (name, original_table_name, table_type) VALUES('$saveTableName', '$saveTableName', 'reconcile')");
+    $successMsg = 'Compared data saved successfully';
 }
 include_once "header.php";
 ?>
@@ -39,10 +64,11 @@ include_once "header.php";
           <h2 style="margin-bottom:25px;">Compared data </h2>
           <span style="font-weight:bold;color:green" id="notificationMsg"> <?=$successMsg?> </span>
           <div class="dropdown" style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px;">
-            <div id="tableNameContainer" style="font-weight: bold;"> Table Name: <span id="tableName">compare_data_1718536225</span>
+            <div id="tableNameContainer" style="font-weight: bold;"> Table Name: <span id="tableName"><?=$saveTableName?></span>
             </div>
             <div style="display: flex; align-items: center;">
               <a href="reconcile.php" class="btn btn-primary" style="margin-right: 5px; height: 40px;">Back</a>
+              <input type="submit" value="Save table" id="submitBtn" style="line-height: 20px; width:100%">
             </div>
           </div>
         </div>
@@ -72,24 +98,19 @@ include_once "header.php";
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
 $(document).ready(function() {
-    document.getElementById('submitBtn').addEventListener('click', function() {
-        var tableNameSpan = document.getElementById('tableName');
-        var tableName = tableNameSpan.textContent;
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.id = 'tableNameInput';
-        input.value = tableName;
-        input.style.fontWeight = 'bold';
+  $('#submitBtn').click(function() {
+        event.preventDefault();
+        document.getElementById("saveTable").value = true;
+        let currentUrl = window.location.href;
+        let url = new URL(currentUrl);
 
-        // Replace the span with the input element
-        var container = document.getElementById('tableNameContainer');
-        container.innerHTML = 'Table Name: ';
-        container.appendChild(input);
+        $("#formSaveTable").action = url.href;
+        $("#formSaveTable").submit();
     });
     setTimeout(function() {
         var notificationMsgDiv = document.getElementById('notificationMsg');
         notificationMsgDiv.style.display = 'none';
-    }, 3000);
+    }, 2000);
 });
 </script>
 </body>

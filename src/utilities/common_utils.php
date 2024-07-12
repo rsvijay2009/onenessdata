@@ -242,60 +242,69 @@ function calculateDataQualityStatPercentage($oveallCount, $value)
 
 function insertIntoDynamicDatatypeTable($tableName, $originalTableName, $dataToInsert, $pdo)
 {
-    $dataTypeTableName = $tableName.'_datatype';
-    $dataTypeTableName = convertMultipleUnderscoresIntoSingle($dataTypeTableName);
-    $insertSql = "INSERT INTO $dataTypeTableName (table_id, table_name, original_table_name, column_name, datatype_id, datatype, data_quality, uniqueness) VALUES (:table_id, :table_name, :original_table_name, :column_name, :datatype_id, :datatype, :data_quality, :uniqueness)";
-    $stmt = $pdo->prepare($insertSql);
+    try {
+        $dataTypeTableName = $tableName.'_datatype';
+        $dataTypeTableName = convertMultipleUnderscoresIntoSingle($dataTypeTableName);
+        $insertSql = "INSERT INTO $dataTypeTableName (table_id, table_name, original_table_name, column_name, datatype_id, datatype, data_quality, uniqueness) VALUES (:table_id, :table_name, :original_table_name, :column_name, :datatype_id, :datatype, :data_quality, :uniqueness)";
+        $stmt = $pdo->prepare($insertSql);
 
-    foreach ($dataToInsert as $row) {
-        $dataQuality = mt_rand(50, 100);
-        $dataUniqueness = mt_rand(50, 100);
-        $stmt->bindParam(':table_id', $row['table_id']);
-        $stmt->bindParam(':table_name', $tableName);
-        $stmt->bindParam(':original_table_name', $originalTableName);
-        $stmt->bindParam(':column_name', $row['column_name']);
-        $stmt->bindParam(':datatype_id', $row['datatype_id']);
-        $stmt->bindParam(':datatype', $row['datatype']);
-        $stmt->bindParam(':data_quality', $dataQuality);
-        $stmt->bindParam(':uniqueness', $dataUniqueness);
-        $stmt->execute();
+        foreach ($dataToInsert as $row) {
+            $dataQuality = mt_rand(50, 100);
+            $dataUniqueness = mt_rand(50, 100);
+            $stmt->bindParam(':table_id', $row['table_id']);
+            $stmt->bindParam(':table_name', $tableName);
+            $stmt->bindParam(':original_table_name', $originalTableName);
+            $stmt->bindParam(':column_name', $row['column_name']);
+            $stmt->bindParam(':datatype_id', $row['datatype_id']);
+            $stmt->bindParam(':datatype', $row['datatype']);
+            $stmt->bindParam(':data_quality', $dataQuality);
+            $stmt->bindParam(':uniqueness', $dataUniqueness);
+            $stmt->execute();
+        }
+        return true;
+    } catch(Exception $e) {
+        return false;
     }
 }
 
 function insertIntoDynamicDashboardTable($tableName, $pdo)
 {
-    $sql = "INSERT INTO $tableName (data_quality_correct_data, data_quality_incorrect_data, text_issue, number_issue, date_issue, alphanumeric_issue, email_issue, duplicate_entries_issue, others_issue, null_issue, overall_correct_data, overall_incorrect_data) VALUES (:data_quality_correct_data, :data_quality_incorrect_data, :text_issue, :number_issue, :date_issue, :alphanumeric_issue, :email_issue, :duplicate_entries_issue, :others_issue, :null_issue, :overall_correct_data, :overall_incorrect_data)";
-    $stmt = $pdo->prepare($sql);
+    try {
+        $sql = "INSERT INTO $tableName (data_quality_correct_data, data_quality_incorrect_data, text_issue, number_issue, date_issue, alphanumeric_issue, email_issue, duplicate_entries_issue, others_issue, null_issue, overall_correct_data, overall_incorrect_data) VALUES (:data_quality_correct_data, :data_quality_incorrect_data, :text_issue, :number_issue, :date_issue, :alphanumeric_issue, :email_issue, :duplicate_entries_issue, :others_issue, :null_issue, :overall_correct_data, :overall_incorrect_data)";
+        $stmt = $pdo->prepare($sql);
 
-    // Bind the parameters
-    $data_quality_correct_data = mt_rand(30, 100);
-    $data_quality_incorrect_data = mt_rand(30, 100);
-    $text_issue = mt_rand(1, 100);
-    $number_issue = mt_rand(1, 100);
-    $date_issue = mt_rand(1, 100);
-    $alphanumeric_issue = mt_rand(1, 100);
-    $email_issue = mt_rand(1, 100);
-    $duplicate_entries_issue = mt_rand(1, 100);
-    $others_issue = mt_rand(1, 100);
-    $null_issue = mt_rand(1, 100);
-    $overall_correct_data = mt_rand(30, 100);
-    $overall_incorrect_data = mt_rand(30, 100);
+        // Bind the parameters
+        $data_quality_correct_data = mt_rand(30, 100);
+        $data_quality_incorrect_data = mt_rand(30, 100);
+        $text_issue = mt_rand(1, 100);
+        $number_issue = mt_rand(1, 100);
+        $date_issue = mt_rand(1, 100);
+        $alphanumeric_issue = mt_rand(1, 100);
+        $email_issue = mt_rand(1, 100);
+        $duplicate_entries_issue = mt_rand(1, 100);
+        $others_issue = mt_rand(1, 100);
+        $null_issue = mt_rand(1, 100);
+        $overall_correct_data = mt_rand(30, 100);
+        $overall_incorrect_data = mt_rand(30, 100);
 
-    $stmt->bindParam(':data_quality_correct_data', $data_quality_correct_data);
-    $stmt->bindParam(':data_quality_incorrect_data', $data_quality_incorrect_data);
-    $stmt->bindParam(':text_issue', $text_issue);
-    $stmt->bindParam(':number_issue', $number_issue);
-    $stmt->bindParam(':date_issue', $date_issue);
-    $stmt->bindParam(':alphanumeric_issue', $alphanumeric_issue);
-    $stmt->bindParam(':email_issue', $email_issue);
-    $stmt->bindParam(':duplicate_entries_issue', $duplicate_entries_issue);
-    $stmt->bindParam(':others_issue', $others_issue);
-    $stmt->bindParam(':null_issue', $null_issue);
-    $stmt->bindParam(':overall_correct_data', $overall_correct_data);
-    $stmt->bindParam(':overall_incorrect_data', $overall_incorrect_data);
+        $stmt->bindParam(':data_quality_correct_data', $data_quality_correct_data);
+        $stmt->bindParam(':data_quality_incorrect_data', $data_quality_incorrect_data);
+        $stmt->bindParam(':text_issue', $text_issue);
+        $stmt->bindParam(':number_issue', $number_issue);
+        $stmt->bindParam(':date_issue', $date_issue);
+        $stmt->bindParam(':alphanumeric_issue', $alphanumeric_issue);
+        $stmt->bindParam(':email_issue', $email_issue);
+        $stmt->bindParam(':duplicate_entries_issue', $duplicate_entries_issue);
+        $stmt->bindParam(':others_issue', $others_issue);
+        $stmt->bindParam(':null_issue', $null_issue);
+        $stmt->bindParam(':overall_correct_data', $overall_correct_data);
+        $stmt->bindParam(':overall_incorrect_data', $overall_incorrect_data);
+        $stmt->execute();
 
-    // Execute the statement
-    $stmt->execute();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 function getColumnNames($pdo, $table)

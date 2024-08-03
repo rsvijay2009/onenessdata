@@ -68,3 +68,11 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (username, password) VALUES('admin', 'admin');
+
+
+CREATE TABLE `debug_log` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `message` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);

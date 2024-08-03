@@ -1,10 +1,3 @@
-CREATE TABLE `debug_log` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `message` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-);
-
 DELIMITER $$
 
 CREATE PROCEDURE `FindIncorrectData`(IN tbl_name VARCHAR(255), IN datatype_tbl_name VARCHAR(255))

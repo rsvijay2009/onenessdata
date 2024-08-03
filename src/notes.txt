@@ -78,3 +78,7 @@ Altered the table for rename
 While rename click on the project, what about the join, compare tables?
 
 Hide prepare and compare
+
+
+Set the default values to zero in dashboard table
+ Update whenever load the page

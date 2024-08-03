@@ -29,6 +29,24 @@ if (!empty($tableName) && $isTableExists) {
         $stmt->execute();
         $spDashboardData = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
+
+        //Truncate the existing wrong data from data_verification and populate again
+        $dataVerificationTable = $tableName.'_data_verification';
+        $stmt = $pdo->prepare("TRUNCATE TABLE `$dataVerificationTable`");
+        $stmt->execute();
+        $stmt->closeCursor(); // Close cursor to release the connection
+
+        // Prepare and execute the stored procedure call
+        $stmt = $pdo->prepare("CALL FindIncorrectData('$tableName', '$tableDataTypes')");
+        $stmt->execute();
+        $stmt->closeCursor(); // Close cursor to release the connection
+
+        //Get the count of incorrect datas to displayed it in issues card
+        $stmt = $pdo->prepare("SELECT dt.datatype, COUNT(vt.column_name) AS issue_count FROM `$tableDataTypes` dt LEFT JOIN `$dataVerificationTable` vt ON dt.column_name = vt.column_name GROUP BY dt.datatype");
+        $stmt->execute();
+        $issuesCountData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+
     } catch (PDOException $e) {
         die("Something went wrong" . $e->getMessage().$e->getLine());
     }

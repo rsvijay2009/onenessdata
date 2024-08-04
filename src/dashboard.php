@@ -1,6 +1,7 @@
 <?php
 include_once "database.php";
 include_once "sidebar.php";
+include_once "utilities/common_utils.php";
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -42,15 +43,15 @@ if (!empty($tableName) && $isTableExists) {
         $stmt->closeCursor(); // Close cursor to release the connection
 
         //Get the count of incorrect datas to displayed it in issues card
-        $stmt = $pdo->prepare("SELECT dt.datatype, COUNT(vt.column_name) AS issue_count FROM `$tableDataTypes` dt LEFT JOIN `$dataVerificationTable` vt ON dt.column_name = vt.column_name GROUP BY dt.datatype");
+        $stmt = $pdo->prepare("SELECT dt.name, COUNT(dvt.master_primary_key) AS count FROM datatypes dt LEFT JOIN `$tableDataTypes` td ON dt.name = td.datatype LEFT JOIN `$dataVerificationTable` dvt ON td.column_name = dvt.column_name AND dvt.ignore_flag = 0 GROUP BY dt.name;");
         $stmt->execute();
         $issuesCountData = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
-
     } catch (PDOException $e) {
         die("Something went wrong" . $e->getMessage().$e->getLine());
     }
 }
+$dataQualityPercentage = [];
 include_once "header.php";
 ?>
 <link rel="stylesheet" href="styles/dashboard.css">
@@ -80,24 +81,19 @@ include_once "header.php";
                     <h5 class="card-title">Issues</h5>
                     <div class="card-body">
                             <?php
-                            $stmt = $pdo->prepare("SELECT name from datatypes WHERE status = 'ACTIVE'");
-                            $stmt->execute();
-                            $datatypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                            foreach ($datatypes as $key => $datatype) {
+                            foreach ($issuesCountData as $key => $issueCountRow) {
                                 $backGroundColor = ($key % 2 == 0) ? '#71B6FA' : '#5C6ABD';
-                                $storedProcedureVariableName = strtolower($datatype['name']).'_issue';
-                                $issueCount = $spDashboardData[$storedProcedureVariableName] ?? 0;
 
-                                if($issueCount == 0) {
-                                    echo '<div class="sticky-bar" style="background-color:#E9EDF0;width: 80%;color:black;">'.$datatype['name'].' -  '.$issueCount.'</div>';
+                                if($issueCountRow['count'] == 0) {
+                                    echo '<div class="sticky-bar" style="background-color:#E9EDF0;width: 80%;color:black;">'.$issueCountRow['name'].' -  '.$issueCountRow['count'].'</div>';
                                 } else {
-                                    echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$datatype['name'].' -  '.$issueCount.'</div></a>';
+                                    echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$issueCountRow['name'].' -  '.$issueCountRow['count'].'</div></a>';
                                 }
                              }
-                                $duplicateEntriesIssueCount = $spDashboardData["duplicate_entries_issue"] ?? 0;
-                                $otherIssueCount = $spDashboardData["others_issue"] ?? 0;
-                                $nullIssueCount = $spDashboardData["null_issue"] ?? 0;
+
+                            $duplicateEntriesIssueCount = $spDashboardData["duplicate_entries_issue"] ?? 0;
+                            $otherIssueCount = $spDashboardData["others_issue"] ?? 0;
+                            $nullIssueCount = $spDashboardData["null_issue"] ?? 0;
 
                              if($duplicateEntriesIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0; width: 80%;">Duplicate entries - '.$duplicateEntriesIssueCount.'</div>';
@@ -139,13 +135,22 @@ include_once "header.php";
                                 </tr>
                             </thead>
                         <tbody>
-                        <?php foreach ($columns as $column) {?>
+                        <?php
+                         $correctDataPercentage = 0;
+                         $inCorrectDataPercentage = 0;
+                        foreach ($columns as $column) {
+                            $dataQuality = calculateDataQualityPercentage($pdo, $tableName, $column["column_name"]);
+                            $dataQualityPercentage[] = [
+                                'correct_data_percentage' => $correctDataPercentage + $dataQuality['correct_data_percentage'],
+                                'incorrect_data_percentage' => $inCorrectDataPercentage + $dataQuality['incorrect_data_percentage']
+                            ];
+                            ?>
                                     <tr>
                                     <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
                                     <td>
                                         <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $column['data_quality'] ?? 0;?>%;"></div>
-                                            <div class="sticky-bar-1" style="background-color: green; width: 10%; border-radius:3px;font-size:10px;text-align:center;"><?= $column['data_quality'] ?? 0;?>%</div>
+                                            <div class="gradient-sticky-bar" style="background-color: green; width: 80%; --percentage: <?= $dataQuality['correct_data_percentage'] ?? 0?>%;"></div>
+                                            <div class="sticky-bar-1" style="background-color: green; width: 10%; border-radius:3px;font-size:10px;text-align:center;"><?=$dataQuality['correct_data_percentage'] ?? 0?>%</div>
                                         </div>
                                     </td>
                                     <td>
@@ -170,14 +175,24 @@ include_once "header.php";
     </div>
 </div>
 <?php
-} ?>
+}
+
+//Calculate overall data quality percentage
+$overallCorrectData = 0;
+
+foreach($dataQualityPercentage as  $dqp) {
+    $overallCorrectData+= $dqp['correct_data_percentage'] ?? 0;
+}
+$overallCorrectDataPercentage = round($overallCorrectData / count($columns));
+$overallInCorrectDataPercentage = 100 - $overallCorrectDataPercentage;
+?>
 <script>
 // Register the Datalabels plugin with Chart.js
 Chart.register(ChartDataLabels);
 const data = {
     labels: ['Incorrect data', 'Correct data'],
     datasets: [{
-        data: [<?= $spDashboardData["data_quality_correct_data"] ?? 0 ?>, <?= $spDashboardData["data_quality_incorrect_data"] ?? 0 ?>],
+        data: [<?=$overallCorrectDataPercentage?>, <?=$overallInCorrectDataPercentage?>],
         backgroundColor: ['#E92C18', '#4DB24F']
     }]
 };
@@ -262,8 +277,8 @@ var barChart = new Chart(ctx2, {
     data: {
         labels: ['Correct data', 'Wrong data'],
         datasets: [{
-            data: [<?= $spDashboardData["overall_correct_data"] ?? 0 ?>, <?= $spDashboardData["overall_incorrect_data"] ?? 0?>],
-            backgroundColor: ['#4DB24F', '#833771'],
+            data: [<?=$overallCorrectDataPercentage?>, <?=$overallInCorrectDataPercentage?>],
+            backgroundColor: ['#4DB24F', '#E92C18'],
             borderWidth: 1
         }]
     },

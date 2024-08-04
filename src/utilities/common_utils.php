@@ -344,3 +344,31 @@ function updateOriginalTableNameColumnInRequiredTables($pdo, $oldTableName, $new
         die($e->getMessage());
     }
 }
+
+function calculateDataQualityPercentage($pdo, $tableName, $columName)
+{
+    try {
+        $dataVerificationTableName = $tableName.'_data_verification';
+
+        //Get the total data
+        $stmt1 = $pdo->query("SELECT count(*) as total_data FROM $tableName");
+        $totalData = $stmt1->fetch(PDO::FETCH_ASSOC)['total_data'];
+
+
+        //Get the total incorrect data
+        $stmt2 = $pdo->query("SELECT count(*) as total_incorrect_data FROM $dataVerificationTableName WHERE column_name = '$columName'");
+        $totalIncorrectData = $stmt2->fetch(PDO::FETCH_ASSOC)['total_incorrect_data'];
+
+        //Calculate the correct & incorrect data percentage
+
+        $incorrectDataPercentage = round(($totalIncorrectData / $totalData) * 100);
+        $correctDataPercentage = 100 - $incorrectDataPercentage;
+
+        return [
+            'correct_data_percentage' => $correctDataPercentage,
+            'incorrect_data_percentage' => $incorrectDataPercentage
+        ];
+    } catch (PDOException $e) {
+        die($e->getMessage());
+    }
+}

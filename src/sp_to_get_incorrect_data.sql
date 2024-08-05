@@ -60,9 +60,9 @@ BEGIN
             WHEN 1 THEN -- Text
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"');
             WHEN 2 THEN -- Number
-                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]+)?$"');
+                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$"');
             WHEN 3 THEN -- Date
-                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE (', col_name, ' NOT REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" OR STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NULL OR STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NULL OR STR_TO_DATE(', col_name, ', "%Y/%m/%d") IS NULL OR STR_TO_DATE(', col_name, ', "%Y-%m-%d") IS NULL)');
+                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE NOT (','(', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL) OR ','(', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)',')');
             WHEN 4 THEN -- Alphanumeric
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$"');
             WHEN 5 THEN -- Email

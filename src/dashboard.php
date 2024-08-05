@@ -87,7 +87,7 @@ include_once "header.php";
                                 if($issueCountRow['count'] == 0) {
                                     echo '<div class="sticky-bar" style="background-color:#E9EDF0;width: 80%;color:black;">'.$issueCountRow['name'].' -  '.$issueCountRow['count'].'</div>';
                                 } else {
-                                    echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$issueCountRow['name'].' -  '.$issueCountRow['count'].'</div></a>';
+                                    echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'&type='.$issueCountRow['name'].'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color: '.$backGroundColor.'; width: 100%;">'.$issueCountRow['name'].' -  '.$issueCountRow['count'].'</div></a>';
                                 }
                              }
 
@@ -277,7 +277,7 @@ var barChart = new Chart(ctx2, {
     data: {
         labels: ['Correct data', 'Wrong data'],
         datasets: [{
-            data: [<?=$overallCorrectDataPercentage?>, <?=$overallInCorrectDataPercentage?>],
+            data: [<?=$overallInCorrectDataPercentage?>, <?=$overallCorrectDataPercentage?>],
             backgroundColor: ['#4DB24F', '#E92C18'],
             borderWidth: 1
         }]

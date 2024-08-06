@@ -42,14 +42,12 @@ include_once "header.php";
                             <?php if(count($issues) > 0) {
                                 foreach ($issues as $issue) { ?>
                                     <tr>
+                                        <?php if($issue['count'] > 0) {?>
                                         <td>
-                                            <?php if($issue['count'] > 0) {?>
-                                                <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
-                                            <?php } else { ?>
-                                                <?=$issue['column_name']?>
-                                            <?php } ?>
+                                            <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
                                             </td>
                                         <td><?=$issue['count']?></td>
+                                        <?php } ?>
                                     </tr>
                                 <?php }
                             } else { ?>

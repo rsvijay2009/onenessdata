@@ -31,8 +31,18 @@ if (!empty($tableName) && $isTableExists) {
         $spDashboardData = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
 
-        //Truncate the existing wrong data from data_verification and populate again
         $dataVerificationTable = $tableName.'_data_verification';
+
+        //Get the ignored issue to update the status, otherwise FindIncorrectData SP will make the ignore_flag as 0 for all the records
+        $dvtQuery = $pdo->prepare("SELECT id FROM `$dataVerificationTable` where ignore_flag = 1");
+        $dvtQuery->execute();
+        $dvtQueryResults = $dvtQuery->fetchAll(PDO::FETCH_ASSOC);
+        $idsToIgnore = [];
+        foreach ($dvtQueryResults as $dvtQueryResult) {
+            $idsToIgnore[] = $dvtQueryResult['id'];
+        }
+
+        //Truncate the existing wrong data from data_verification and populate again
         $stmt = $pdo->prepare("TRUNCATE TABLE `$dataVerificationTable`");
         $stmt->execute();
         $stmt->closeCursor(); // Close cursor to release the connection
@@ -41,6 +51,10 @@ if (!empty($tableName) && $isTableExists) {
         $stmt = $pdo->prepare("CALL FindIncorrectData('$tableName', '$tableDataTypes')");
         $stmt->execute();
         $stmt->closeCursor(); // Close cursor to release the connection
+
+        $idsToIgnore = implode(",", $idsToIgnore);
+        $updateIgnoreFlagQuery = $pdo->prepare("UPDATE $dataVerificationTable SET ignore_flag = 1 WHERE id in ($idsToIgnore)");
+        $updateIgnoreFlagQuery->execute();
 
         //Get the count of incorrect datas to displayed it in issues card
         $stmt = $pdo->prepare("SELECT dt.name, COUNT(dvt.master_primary_key) AS count FROM datatypes dt LEFT JOIN `$tableDataTypes` td ON dt.name = td.datatype LEFT JOIN `$dataVerificationTable` dvt ON td.column_name = dvt.column_name AND dvt.ignore_flag = 0 GROUP BY dt.name;");

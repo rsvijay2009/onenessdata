@@ -9,14 +9,32 @@ $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
 $dataVerificationTableName = $tableName.'_data_verification';
+print_r($_POST);
 
 if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
     $issueId = $_POST['issueId'];
     $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE id = $issueId";
     $updateQuery = $pdo->prepare($query);
     $updateQuery->execute();
+    $notificationMsg = 'Selected issue ignored successfully';
 }
 
+$notificationMsg = '';
+if(isset($_POST['ignoreAllIssueFlag']) && $_POST['ignoreAllIssueFlag'] != '') {
+    $dvtQuery = $pdo->prepare("SELECT $columnName, $dataVerificationTableName.id as dvId  FROM `$tableName` INNER JOIN $dataVerificationTableName ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0");
+    $dvtQuery->execute();
+    $dvtQueryResults = $dvtQuery->fetchAll(PDO::FETCH_ASSOC);
+    $idsToIgnore = [];
+    foreach ($dvtQueryResults as $dvtQueryResult) {
+        $idsToIgnore[] = $dvtQueryResult['dvId'];
+    }
+    if(!empty($idsToIgnore)) {
+        $idsToIgnore = implode(",", $idsToIgnore);
+        $updateQuery = $pdo->prepare("UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE id in ($idsToIgnore)");
+        $updateQuery->execute();
+        $notificationMsg = 'All the issues are ignored successfully';
+    }
+}
 try {
     // PDO connection setup
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -48,7 +66,7 @@ try {
             }
             $queryColumns = $queryColumns.', '.$dataVerificationTableName.'.id as dvId';
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
-            $query = "SELECT $queryColumns FROM `$tableName` INNER JOIN $dataVerificationTableName
+            $query = "SELECT $queryColumns  FROM `$tableName` INNER JOIN $dataVerificationTableName
             ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
 
             $dataQuery = $pdo->prepare($query);
@@ -73,8 +91,10 @@ include_once "header.php";
         <div class="col-md-10">
             <div style="padding:10px;">
             <h2 style="margin-bottom:25px;">Data from the <?=$tableName?> table</h2>
+            <span style="color:green;font-weight:bold;" id="ignoreAllIssueNotificationId"><?=$notificationMsg?></span>
             <?php if(!empty($selectedColumns) && !empty($data)) { ?>
                 <div class="dropdown" style="display: flex; justify-content: flex-end;">
+                <button class="btn" style="background-color: #5C6ABC;color:white;margin-right:15px;" onclick="ignoreAllIssues()">Ignore all</button>
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                         Select Columns
                     </button>
@@ -131,6 +151,7 @@ include_once "header.php";
                                         <button class="btn btn-success save-btn" style="display: none;">Save</button>
                                         <form name="ignoreIssueForm" method="post" style="display:inline-block;">
                                             <input type="hidden" name="issueId" id="issueId" value="">
+                                            <input type="hidden" name="ignoreAllIssueFlag" id="ignoreAllIssueFlag">
                                             <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId']) ?>');">Ignore</button>
                                         </form>
                                     </td>
@@ -241,6 +262,25 @@ function ignoreIssue(issueId) {
         return false;
     }
 }
+function ignoreAllIssues() {
+    let result = confirm("Are you sure to ignore all the issues?");
+
+    if (result) {
+        document.getElementById('ignoreAllIssueFlag').value= true;
+        document.forms["ignoreIssueForm"].submit();
+    } else {
+        event.preventDefault();
+        return false;
+    }
+}
+setTimeout(function() {
+    var p = document.getElementById('ignoreAllIssueNotificationId');
+    p.style.opacity = '0';
+
+    setTimeout(function() {
+        p.style.display = 'none';
+    }, 1000);
+}, 3000);
 </script>
 </body>
 </html>

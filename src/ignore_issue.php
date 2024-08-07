@@ -9,7 +9,6 @@ $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
 $dataVerificationTableName = $tableName.'_data_verification';
-print_r($_POST);
 
 if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
     $issueId = $_POST['issueId'];

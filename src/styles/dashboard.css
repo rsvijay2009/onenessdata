@@ -37,6 +37,7 @@
     color:white;
     font-size:12px;
     border-radius: 3px;
+    cursor: pointer;
 }
 .gradient-sticky-bar2 {
     flex-direction:column;

@@ -356,11 +356,10 @@ function calculateDataQualityPercentage($pdo, $tableName, $columName)
 
 
         //Get the total incorrect data
-        $stmt2 = $pdo->query("SELECT count(*) as total_incorrect_data FROM $dataVerificationTableName WHERE column_name = '$columName'");
+        $stmt2 = $pdo->query("SELECT count(*) as total_incorrect_data FROM $dataVerificationTableName WHERE column_name = '$columName' AND ignore_flag = 0");
         $totalIncorrectData = $stmt2->fetch(PDO::FETCH_ASSOC)['total_incorrect_data'];
 
         //Calculate the correct & incorrect data percentage
-
         $incorrectDataPercentage = round(($totalIncorrectData / $totalData) * 100);
         $correctDataPercentage = 100 - $incorrectDataPercentage;
 

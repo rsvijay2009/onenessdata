@@ -40,7 +40,7 @@ try {
         $notificationMsg = 'Selected issue ignored successfully';
     }
     if ($stmt->fetch()) {
-        $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id', 'table_name')");
+        $columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('table_id', 'table_name', 'original_table_name')");
         $columnQuery->execute();
         $columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
 
@@ -139,7 +139,7 @@ include_once "header.php";
                                             </td>
                                         <?php } ?>
                                     <?php endforeach; ?>
-                                    <td>
+                                    <td style="width:13%;">
                                         <button class="btn btn-primary edit-btn">Edit</button>
                                         <button class="btn btn-success save-btn" style="display: none;">Save</button>
                                         <form name="ignoreIssueForm" method="post" style="display:inline-block;">
@@ -248,7 +248,7 @@ $(document).ready(function() {
     });
 });
 function ignoreIssue(issueId) {
-    let result = confirm("Are you sure to ignore this issue?" + issueId);
+    let result = confirm("Are you sure to ignore this issue?");
 
     if (result) {
         document.getElementById('issueId').value= issueId;

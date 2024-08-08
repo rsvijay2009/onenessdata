@@ -9,19 +9,50 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 $tableName = $_REQUEST['table'] ?? null;
 $dataQualityType = $_REQUEST['type'] ?? null;
 $projectName = $_REQUEST['project'] ?? '';
-
+$notificationMsg = '';
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$columnQuery = $pdo->prepare("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name')");
-$columnQuery->execute();
-$columns = $columnQuery->fetchAll(PDO::FETCH_COLUMN);
-
-$sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` LIMIT 10");
-$sqlQuery->execute();
-$data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
-
+$dataVerificationTableName = $tableName.'_data_verification';
+if(isset($_POST['ignoreAllIssueFlag']) && $_POST['ignoreAllIssueFlag'] != '') {
+    $dvtQuery = $pdo->prepare("SELECT ec.*, ecdv.column_name, ecdv.master_primary_key FROM `$tableName` ec LEFT JOIN `$dataVerificationTableName` ecdv ON ec.primary_key = ecdv.master_primary_key WHERE ecdv.ignore_flag = 0");
+    $dvtQuery->execute();
+    $dvtQueryResults = $dvtQuery->fetchAll(PDO::FETCH_ASSOC);
+    $idsToIgnore = [];
+    foreach ($dvtQueryResults as $dvtQueryResult) {
+        $idsToIgnore[] = $dvtQueryResult['master_primary_key'];
+    }
+    if(!empty($idsToIgnore)) {
+        $idsToIgnore = implode(",", $idsToIgnore);
+        $updateQuery = $pdo->prepare("UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key in ($idsToIgnore)");
+        $updateQuery->execute();
+        $notificationMsg = 'All the issues are ignored successfully';
+    }
+}
+if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
+    $issueId = $_POST['issueId'];
+    $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key = $issueId";
+    $updateQuery = $pdo->prepare($query);
+    $updateQuery->execute();
+    $notificationMsg = 'Selected issue ignored successfully';
+}
+$columns = [];
+$stmt = $pdo->query("SHOW COLUMNS FROM `$tableName` WHERE Field NOT IN('primary_key', 'table_id', 'table_name', 'original_table_name')");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $columns[] = $row['Field'];
+}
+$data = [];
+if($dataQualityType == 'correct') {
+    $sqlQuery = $pdo->prepare("select * from  `$tableName` where primary_key NOT IN(select master_primary_key from `$dataVerificationTableName`)");
+    $sqlQuery->execute();
+    $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
+}
+if($dataQualityType == 'incorrect') {
+    $sqlQuery = $pdo->prepare("SELECT ec.*, ecdv.column_name, ecdv.master_primary_key FROM `$tableName` ec LEFT JOIN `$dataVerificationTableName` ecdv ON ec.primary_key = ecdv.master_primary_key WHERE ecdv.ignore_flag = 0");
+    $sqlQuery->execute();
+    $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
+}
 if(isset($_POST) && !empty($_POST['downloadType'])) {
     // Query to fetch data
     $stmt = $pdo->query("SELECT * FROM $tableName");
@@ -125,9 +156,14 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
         <div class="col-md-10">
             <!-- Table Below Cards -->
             <div style="padding:10px;">
+                <h2 style="margin-bottom:25px;"><?=ucfirst($dataQualityType)?> data from the <?=$tableName?> table</h2>
+                <span style="color:green;font-weight:bold;" id="ignoreAllIssueNotificationId"><?=$notificationMsg?></span>
                 <?php if(!empty($data)) { ?>
                     <div class="dropdown" style="display: flex; justify-content: flex-end; margin-top:40px;">
                         <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                        <?php if($dataQualityType == 'incorrect') { ?>
+                            <button class="btn" style="background-color: #5C6ABC;color:white;margin-right:4px;" onclick="ignoreAllIssues()">Ignore all</button>
+                        <?php } ?>
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #5C6ABC;">
                            Download as
                         </button>
@@ -155,16 +191,44 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
                                 <?php foreach ($columns as $col): ?>
                                     <th><?= htmlspecialchars($col) ?></th>
                                 <?php endforeach; ?>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($data as $row): ?>
-                                <tr>
-                                    <?php foreach ($columns as $col): ?>
-                                        <td><?= htmlspecialchars($row[$col]) ?></td>
-                                    <?php endforeach; ?>
-                                </tr>
-                            <?php endforeach; ?>
+                            <?php if($dataQualityType == 'correct') { ?>
+                                <?php foreach ($data as $row): ?>
+                                    <tr>
+                                        <?php foreach ($columns as $col): ?>
+                                            <td><?= htmlspecialchars($row[$col]) ?></td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php } else { ?>
+                                <?php foreach ($data as $row): ?>
+                                    <tr>
+                                        <?php foreach ($columns as $col): ?>
+                                            <?php
+                                            // Check if the current column should be highlighted
+                                            $highlight = ($row['column_name'] == $col) ? ' style="color: red;"' : '';
+                                            ?>
+                                            <td<?= $highlight ?>><span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
+                                                    <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col) ?>" style="display: none;">
+                                                    <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['master_primary_key']) ?>" style="display: none;">
+                                            </td>
+                                        <?php endforeach; ?>
+                                        <td style="width:13%;">
+                                            <button class="btn btn-primary edit-btn">Edit</button>
+                                            <button class="btn btn-success save-btn" style="display: none;">Save</button>
+                                            <form name="ignoreIssueForm" method="post" style="display:inline-block;">
+                                                <input type="hidden" name="issueId" id="issueId" value="">
+                                                <input type="hidden" name="ignoreAllIssueFlag" id="ignoreAllIssueFlag">
+                                                <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['master_primary_key']) ?>');">Ignore</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php } ?>
                         </tbody>
                     </table>
                 <?php } else {?>
@@ -177,6 +241,35 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
 </div>
 <script>
 $(document).ready(function() {
+    $('.edit-btn').click(function() {
+        var row = $(this).closest('tr');
+        row.find('.editable').show();
+        row.find('.non-editable').hide();
+        $(this).hide();
+        row.find('.save-btn').show();
+    });
+
+    $('.save-btn').click(function() {
+        var row = $(this).closest('tr');
+        var idToUpdate = row.find('input#rowId').val();
+        var updatedData = {};
+        row.find('input.editable#columnName').each(function() {
+            var input = $(this);
+            var key = input.val();
+            var value = input.prev().val().trim();
+            updatedData[key] = value;
+        });
+
+        // AJAX call to save data
+        $.post('ajax_save_table_data.php', {data: updatedData, table: '<?=$tableName?>', id: idToUpdate}, function(response) {
+            row.find('.editable').hide();
+            row.find('.non-editable').each(function() {
+                $(this).text($(this).next().val());
+            }).show();
+            row.find('.edit-btn').show();
+            row.find('.save-btn').hide();
+        });
+    });
     // Toggle all checkboxes when 'Select All' is clicked
     var allChecked = $('.column-checkbox').length === $('.column-checkbox:checked').length;
     $('#selectAll').prop('checked', allChecked);
@@ -208,6 +301,36 @@ $(document).ready(function() {
         window.downloadForm.submit();
     });
 });
+function ignoreIssue(issueId) {
+    let result = confirm("Are you sure to ignore this issue?");
+
+    if (result) {
+        document.getElementById('issueId').value= issueId;
+        document.forms["ignoreIssueForm"].submit();
+    } else {
+        event.preventDefault();
+        return false;
+    }
+}
+function ignoreAllIssues() {
+    let result = confirm("Are you sure to ignore all the issues?");
+
+    if (result) {
+        document.getElementById('ignoreAllIssueFlag').value= true;
+        document.forms["ignoreIssueForm"].submit();
+    } else {
+        event.preventDefault();
+        return false;
+    }
+}
+setTimeout(function() {
+    var p = document.getElementById('ignoreAllIssueNotificationId');
+    p.style.opacity = '0';
+
+    setTimeout(function() {
+        p.style.display = 'none';
+    }, 1000);
+}, 3000);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

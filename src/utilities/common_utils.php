@@ -371,3 +371,30 @@ function calculateDataQualityPercentage($pdo, $tableName, $columName)
         die($e->getMessage());
     }
 }
+
+function calculateDataQualityNumbers($total, $correctDataPercentage, $inCorrectDataPercentage)
+{
+    // Step 1: Round both counts
+    $correctDataCount = $total * ($correctDataPercentage / 100);
+    $inCorrectDataCount = $total * ($inCorrectDataPercentage / 100);
+    $roundedCorrectCount = round($correctDataCount);
+    $roundedIncorrectCount = round($inCorrectDataCount);
+
+    // Step 2: Calculate the difference to ensure the total is accurate
+    $roundedTotal = $roundedCorrectCount + $roundedIncorrectCount;
+    $difference = $total - $roundedTotal;
+
+    // Step 3: Adjust the count based on the difference
+    if ($difference != 0) {
+        if ($roundedCorrectCount > $roundedIncorrectCount) {
+            $roundedCorrectCount += $difference;
+        } else {
+            $roundedIncorrectCount += $difference;
+        }
+    }
+
+    return [
+        'correct_data_count' => $roundedCorrectCount,
+        'incorrect_data_count' => $roundedIncorrectCount
+    ];
+}

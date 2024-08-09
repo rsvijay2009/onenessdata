@@ -200,6 +200,15 @@ foreach($dataQualityPercentage as  $dqp) {
 }
 $overallCorrectDataPercentage = round($overallCorrectData / count($columns));
 $overallInCorrectDataPercentage = 100 - $overallCorrectDataPercentage;
+
+
+$totalRecordsStmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+$totalRecordsStmt->execute();
+$totalRecords = $totalRecordsStmt->fetchColumn();
+
+$dataQualityNumbers = calculateDataQualityNumbers($totalRecords, $overallCorrectDataPercentage, $overallInCorrectDataPercentage);
+$overallCorrectDataCount = $dataQualityNumbers['correct_data_count'] ?? 0;
+$overallIncorrectDataCount = $dataQualityNumbers['incorrect_data_count'] ?? 0;
 ?>
 <script>
 // Register the Datalabels plugin with Chart.js
@@ -288,7 +297,7 @@ const pieChart = new Chart(
 const data2 = {
     labels: ['Correct data', 'Wrong data'],
     datasets: [{
-        data: [<?=$overallCorrectDataPercentage?>, <?=$overallInCorrectDataPercentage?>],
+        data: [<?=$overallCorrectDataCount?>, <?=$overallIncorrectDataCount?>],
         backgroundColor: ['#4DB24F', '#E92C18'],
         borderWidth: 1
     }]

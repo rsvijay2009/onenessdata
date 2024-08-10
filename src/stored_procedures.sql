@@ -343,28 +343,36 @@ BEGIN
             CASE dt_id
                 WHEN 1 THEN -- Text
                     SET @insert_query = CONCAT(
-                        'INSERT INTO ', @verification_table, ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ' FROM ', tbl_name, 
-                        ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"'
+                        'INSERT INTO ', @verification_table,
+                        ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Text" FROM ', tbl_name,  ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"'
                     );
                 WHEN 2 THEN -- Number
                     SET @insert_query = CONCAT(
-                        'INSERT INTO ', @verification_table, ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ' FROM ', tbl_name, 
+                         'INSERT INTO ', @verification_table,
+                        ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Number" FROM ',tbl_name, 
                         ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$"'
                     );
                 WHEN 3 THEN -- Date
-                    SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE NOT (','(', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL) OR ','(', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)',')');
+                    SET @insert_query = CONCAT('INSERT INTO ', @verification_table,
+                    ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                    'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Date" FROM ', tbl_name, ' WHERE NOT (',
+                    '(', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL) OR ',
+                    '(', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)',
+                    ')');
                 WHEN 4 THEN -- Alphanumeric
                     SET @insert_query = CONCAT(
-                        'INSERT INTO ', @verification_table, ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ' FROM ', tbl_name, 
+                         'INSERT INTO ', @verification_table,
+                        ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Text" FROM ', tbl_name, 
                         ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$"'
                     );
                 WHEN 5 THEN -- Email
                     SET @insert_query = CONCAT(
-                        'INSERT INTO ', @verification_table, ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ' FROM ', tbl_name, 
+                         'INSERT INTO ', @verification_table,
+                        ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Email" FROM ',tbl_name, 
                         ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,24}$"'
                     );
             END CASE;
@@ -380,12 +388,6 @@ BEGIN
 
     -- Close the cursor
     CLOSE cur;
-
-    -- Update the verification table with remarks after the loop
-    SET @update_query = CONCAT('UPDATE ', @verification_table, ' SET remarks = "Datatype mismatch"');
-    PREPARE update_stmt FROM @update_query;
-    EXECUTE update_stmt;
-    DEALLOCATE PREPARE update_stmt;
 
     INSERT INTO debug_log (message) VALUES ('Remarks updated in verification table'); -- Debugging log
 

@@ -119,7 +119,7 @@ include_once "header.php";
                              if($otherIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">Others - '.$otherIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others - '.$otherIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'&type=others" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#71B6FA"; width: 100%;">Others - '.$otherIssueCount.'</div></a>';
                              }
                              if($nullIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">NULL - '.$nullIssueCount.'</div>';

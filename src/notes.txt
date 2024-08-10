@@ -82,3 +82,25 @@ Hide prepare and compare
 
 Set the default values to zero in dashboard table
  Update whenever load the page
+
+
+
+
+ Need to add reason column in verifiation table
+
+ datatype_mismatch
+ Others
+
+
+ For others insert some random data atm
+
+
+ Data Quality Dimensions uniqueness (distinct value of columns)
+
+Top5
+
+select customer_id, count(*) as count from ecommerce_customers group by customer_id order by count desc limit 10;
+
+bottom5
+
+select customer_id, count(*) as count from ecommerce_customers group by customer_id order by count asc limit 10;

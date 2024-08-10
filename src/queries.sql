@@ -42,21 +42,6 @@ CREATE TABLE temp_table_ids (
 );
 
 
-DROP TABLE IF EXISTS data_verification;
-CREATE TABLE data_verification (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    project_id INT NOT NULL,
-    table_id INT NOT NULL,
-    table_name VARCHAR(255) NOT NULL,
-    column_name  VARCHAR(255) NOT NULL,
-    master_primary_key INT NOT NULL,
-    ignore_flag INT NOT NULL DEFAULT 0,
-    status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,

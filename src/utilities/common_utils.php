@@ -223,6 +223,7 @@ function createDynamicTableForDataVerification($tableName, $pdo)
             master_primary_key INT NOT NULL,
             ignore_flag INT NOT NULL DEFAULT 0,
             status VARCHAR(100) NOT NULL DEFAULT 'ACTIVE',
+            remarks TEXT DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )";
@@ -237,7 +238,7 @@ function createDynamicTableForDataVerification($tableName, $pdo)
 
 function calculateDataQualityStatPercentage($oveallCount, $value)
 {
-    return ($value / 100 ) * 100;
+    return round(($value / $oveallCount ) * 100);
 }
 
 function insertIntoDynamicDatatypeTable($tableName, $originalTableName, $dataToInsert, $pdo)
@@ -397,4 +398,10 @@ function calculateDataQualityNumbers($total, $correctDataPercentage, $inCorrectD
         'correct_data_count' => $roundedCorrectCount,
         'incorrect_data_count' => $roundedIncorrectCount
     ];
+}
+
+function findDataQulaityUniqueness($pdo, $tableName, $columName)
+{
+    $stmt = $pdo->query("SELECT count(distinct($columName)) as uniqueness FROM $tableName");
+    return $stmt->fetch(PDO::FETCH_ASSOC)['uniqueness'];
 }

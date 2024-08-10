@@ -26,28 +26,11 @@ $sql = $pdo->prepare("SELECT  $columnName FROM `$tableName`");
 $sql->execute();
 $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-$sqlForTop5Stat = $pdo->prepare("
-SELECT  $columnName, count
-FROM (
-    SELECT $columnName, COUNT(*) AS count, MIN($minMaxKey) AS max_primary_key
-    FROM $tableName
-    GROUP BY $columnName
-) AS subquery
-LIMIT 5
-");
+$sqlForTop5Stat = $pdo->prepare("select $columnName, count(*) as count from $tableName group by $columnName order by count desc limit 10");
 $sqlForTop5Stat->execute();
 $top5Data = $sqlForTop5Stat->fetchAll(PDO::FETCH_ASSOC);
 
-$sqlForBottom5Stat = $pdo->prepare("
-SELECT  $columnName, count
-FROM (
-    SELECT $columnName, COUNT(*) AS count, MIN($minMaxKey) AS max_primary_key
-    FROM $tableName
-    GROUP BY $columnName
-) AS subquery
-ORDER BY max_primary_key DESC
-LIMIt 5
-");
+$sqlForBottom5Stat = $pdo->prepare("select $columnName, count(*) as count from $tableName group by $columnName order by count asc limit 10");
 $sqlForBottom5Stat->execute();
 $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -83,7 +66,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                             <table class="table mt-3 table-bordered">
                                 <thead>
                                     <tr>
-                                        <th style="text-align:center;background:#D3C5E5">Top 5</th>
+                                        <th style="text-align:center;background:#D3C5E5">Top 10</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -118,7 +101,7 @@ $bottom5Data = $sqlForBottom5Stat->fetchAll(PDO::FETCH_ASSOC);
                             <table class="table mt-3 table-bordered">
                                 <thead>
                                     <tr>
-                                        <th style="text-align:center;background:#D3C5E5">Bottom 5</th>
+                                        <th style="text-align:center;background:#D3C5E5">Bottom 10</th>
                                     </tr>
                                 </thead>
                                 <tbody>

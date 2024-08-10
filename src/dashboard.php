@@ -160,6 +160,7 @@ include_once "header.php";
                                 'correct_data_percentage' => $correctDataPercentage + $dataQuality['correct_data_percentage'],
                                 'incorrect_data_percentage' => $inCorrectDataPercentage + $dataQuality['incorrect_data_percentage']
                             ];
+                            $uniqueNess = findDataQulaityUniqueness($pdo, $tableName, $column["column_name"])
                             ?>
                                     <tr>
                                     <td><a href="view_table.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" class="table-name-link"><?=$column["column_name"]?></a></td>
@@ -171,9 +172,9 @@ include_once "header.php";
                                     </td>
                                     <td>
                                     <div class="sticky-bar-container">
-                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $column["uniqueness"] ?? 0;?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $column["uniqueness"] ?? 0;?>%</span></div>
+                                            <div class="gradient-sticky-bar2" style="background-color: #CC313D; width: 30%; --percentage: <?= $uniqueNess ?? 0;?>%; text-align:center;"><span style="margin-left:39px;">Uniqueness - <?= $uniqueNess ?? 0;?>%</span></div>
 
-                                            <?php if($column["uniqueness"] ?? 0 < 100) { ?>
+                                            <?php if($uniqueNess ?? 0 < 100) { ?>
                                                 <div class="sticky-bar-1" style="background-color: #F5613C; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"><a href="data_quality_dimensions_stats.php?column=<?=$column["column_name"]?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;color:white;">View stats</a></div>
                                             <?php } else { ?>
                                                 <div class="sticky-bar-1" style="background-color: #CC313D; width: 10%; font-size:10px; text-align:center;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:-12px;"></div>

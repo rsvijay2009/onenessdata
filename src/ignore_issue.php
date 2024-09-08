@@ -5,20 +5,24 @@ include_once "sidebar.php";
 $tableName = $_REQUEST['table'] ?? null;
 $columnName = $_REQUEST['column'] ?? null;
 $projectName = $_REQUEST['project'] ?? null;
+$type = $_REQUEST['type'] ?? null;
 $selectedColumns = [];
 $data = [];
 $columnToHighlight = (is_array($columnName) ? $columnName[0] : $columnName);
 $dataVerificationTableName = $tableName.'_data_verification';
+$notificationMsg = '';
 
 if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
     $issueId = $_POST['issueId'];
-    $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE id = $issueId";
-    $updateQuery = $pdo->prepare($query);
-    $updateQuery->execute();
-    $notificationMsg = 'Selected issue ignored successfully';
+    try {
+        $updateQueryDvt = $pdo->prepare("UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE id = $issueId");
+        $updateQueryDvt->execute();
+        $notificationMsg = 'Selected issue ignored successfully';
+    } catch (PDOException $e) {
+        die("Could not connect to the database $dbname :" . $e->getMessage());
+    }
 }
 
-$notificationMsg = '';
 if(isset($_POST['ignoreAllIssueFlag']) && $_POST['ignoreAllIssueFlag'] != '') {
     $dvtQuery = $pdo->prepare("SELECT $columnName, $dataVerificationTableName.id as dvId  FROM `$tableName` INNER JOIN $dataVerificationTableName ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0");
     $dvtQuery->execute();
@@ -65,9 +69,14 @@ try {
             }
             $queryColumns = $queryColumns.', '.$dataVerificationTableName.'.id as dvId';
             $columnName = is_array($selectedColumns) ? $selectedColumns[0] : $selectedColumns;
-            $query = "SELECT $queryColumns  FROM `$tableName` INNER JOIN $dataVerificationTableName
-            ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
 
+            if($type == 'others' || $type == 'null') {
+                $query = "SELECT $queryColumns  FROM `$tableName` INNER JOIN $dataVerificationTableName
+                ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0 AND remarks = '$type'";
+            } else {
+                $query = "SELECT $queryColumns  FROM `$tableName` INNER JOIN $dataVerificationTableName
+                ON `$tableName`.primary_key =  $dataVerificationTableName.`master_primary_key` WHERE $dataVerificationTableName.table_name = '$tableName' AND column_name = '$columnName' AND ignore_flag = 0";
+            }
             $dataQuery = $pdo->prepare($query);
             $dataQuery->execute();
             $data = $dataQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -135,30 +144,30 @@ include_once "header.php";
                                         <?php if($col != 'primary_key' && $col != 'table_name') {?>
                                             <td style="max-width:100%">
                                                 <?php if($col == $columnToHighlight) {?>
-                                                    <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col]) ?></span>
+                                                    <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col] ?? '') ?></span>
                                                 <?php } else {?>
-                                                    <span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                                    <span class="non-editable"><?= htmlspecialchars($row[$col] ?? '') ?></span>
                                                 <?php } ?>
-                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
-                                                <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col) ?>" style="display: none;">
-                                                <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key']) ?>" style="display: none;">
+                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col] ?? '') ?>" style="display: none;">
+                                                <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col ?? '') ?>" style="display: none;">
+                                                <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key'] ?? '') ?>" style="display: none;">
                                             </td>
                                         <?php } ?>
                                     <?php endforeach; ?>
                                     <td style="max-width:5%">
                                         <button class="btn btn-primary edit-btn">Edit</button>
                                         <button class="btn btn-success save-btn" style="display: none;">Save</button>
-                                        <form name="ignoreIssueForm" method="post" style="display:inline-block;">
-                                            <input type="hidden" name="issueId" id="issueId" value="">
+                                        <form name="ignoreIssueForm" method="POST" style="display:inline-block;">
+                                            <input type="hidden" id="issueId" name="issueId" value="<?= htmlspecialchars($row['dvId']) ?>">
                                             <input type="hidden" name="ignoreAllIssueFlag" id="ignoreAllIssueFlag">
-                                            <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId']) ?>');">Ignore</button>
+                                            <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId'] ?? '') ?>');">Ignore</button>
                                         </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                    <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
+                    <a href="view_issue.php?table=<?=$tableName?>&project=<?=$projectName?>&type=<?=$type?>" class="btn btn-primary" style="margin-right:5px;">Back</a>
                     <?php } else {?>
                         <table class="table">
                             <thead>
@@ -170,7 +179,7 @@ include_once "header.php";
                             <tbody>
                                 <tr>
                                     <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;font-size:20px;">No incorrect data found for the <?=$columnToHighlight?>
-                    column  <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>">click here </a> to go back</td>
+                    column  <a href="view_issue.php?table=<?=$tableName?>&project=<?=$projectName?>&type=<?=$type?>">click here </a> to go back</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -254,7 +263,9 @@ function ignoreIssue(issueId) {
     let result = confirm("Are you sure to ignore this issue?");
 
     if (result) {
-        document.getElementById('issueId').value= issueId;
+        console.log(issueId);
+        document.querySelector('#issueId').value = issueId;
+        //document.getElementById('issueId').value = issueId;
         document.forms["ignoreIssueForm"].submit();
     } else {
         event.preventDefault();

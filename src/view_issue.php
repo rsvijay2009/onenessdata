@@ -12,7 +12,11 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare("SELECT dt.name, dvt.column_name, COUNT(dvt.master_primary_key) AS count  FROM datatypes dt LEFT JOIN $tableDataType td ON dt.name = td.datatype  LEFT JOIN  $dataVerificationTableName dvt ON td.column_name = dvt.column_name AND dvt.ignore_flag = 0 WHERE dt.name = '$type' GROUP BY dt.name, dvt.column_name;");
+    if($type == 'others' || $type == 'null') {
+        $stmt = $pdo->prepare("SELECT 'Others' AS name, column_name, COUNT(*) AS count FROM $dataVerificationTableName WHERE ignore_flag = 0 AND remarks = '$type' GROUP BY column_name");
+    } else {
+        $stmt = $pdo->prepare("SELECT dt.name, dvt.column_name, COUNT(dvt.master_primary_key) AS count  FROM datatypes dt LEFT JOIN $tableDataType td ON dt.name = td.datatype  LEFT JOIN  $dataVerificationTableName dvt ON td.column_name = dvt.column_name AND dvt.ignore_flag = 0 WHERE dt.name = '$type' GROUP BY dt.name, dvt.column_name;");
+    }
     $stmt->execute();
     $issues = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -44,7 +48,7 @@ include_once "header.php";
                                     <tr>
                                         <?php if($issue['count'] > 0) {?>
                                         <td>
-                                            <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>&project=<?=$projectName?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
+                                            <a href="ignore_issue.php?column=<?=$issue['column_name']?>&table=<?=$tableName?>&project=<?=$projectName?>&type=<?=$type?>" style="text-decoration:none; cursor:pointer;"><?=$issue['column_name']?>
                                             </td>
                                         <td><?=$issue['count']?></td>
                                         <?php } ?>

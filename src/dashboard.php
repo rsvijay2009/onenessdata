@@ -25,11 +25,6 @@ if (!empty($tableName) && $isTableExists) {
         $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
 
-        $dashboardDataTableName = $tableName.'_dashboard';
-        $stmt = $pdo->prepare("CALL GetDashboardData('$dashboardDataTableName')");
-        $stmt->execute();
-        $spDashboardData = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stmt->closeCursor(); // Close cursor to release the connection
 
         $dataVerificationTable = $tableName.'_data_verification';
 
@@ -63,6 +58,12 @@ if (!empty($tableName) && $isTableExists) {
         $stmt->execute();
         $issuesCountData = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
+
+        $dashboardDataTableName = $tableName.'_dashboard';
+        $stmt = $pdo->prepare("CALL GetDashboardData('$dashboardDataTableName', '$tableName')");
+        $stmt->execute();
+        $spDashboardData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor(); // Close cursor to release the connection
     } catch (PDOException $e) {
         die("Something went wrong" . $e->getMessage().$e->getLine());
     }
@@ -124,7 +125,7 @@ include_once "header.php";
                              if($nullIssueCount == 0) {
                                 echo '<div class="sticky-bar" style="color:black;background-color:#E9EDF0;width: 80%;">NULL - '.$nullIssueCount.'</div>';
                              } else {
-                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">NULL - '.$nullIssueCount.'</div></a>';
+                                echo '<a href="view_issue.php?table='.$tableName.'&project='.$projectName.'&type=null" style="cursor:pointer;text-decoration:none;width:80%"><div class="sticky-bar" style="background-color:#5C6ABD"; width: 100%;">NULL - '.$nullIssueCount.'</div></a>';
                              }
                              ?>
                         </div>

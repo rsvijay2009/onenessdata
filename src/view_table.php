@@ -129,13 +129,13 @@ include_once "header.php";
                                         <?php if($col != 'primary_key') {?>
                                             <td>
                                                 <?php if($col == $columnToHighlight) {?>
-                                                    <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col]) ?></span>
+                                                    <span class="non-editable" style="color:red;"><?= htmlspecialchars($row[$col] ?? '') ?></span>
                                                 <?php } else {?>
-                                                    <span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                                    <span class="non-editable"><?= htmlspecialchars($row[$col] ?? '') ?></span>
                                                 <?php } ?>
-                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
-                                                <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col) ?>" style="display: none;">
-                                                <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key']) ?>" style="display: none;">
+                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col] ?? '') ?>" style="display: none;">
+                                                <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col ?? '') ?>" style="display: none;">
+                                                <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['primary_key'] ?? '') ?>" style="display: none;">
                                             </td>
                                         <?php } ?>
                                     <?php endforeach; ?>
@@ -145,7 +145,7 @@ include_once "header.php";
                                         <form name="ignoreIssueForm" method="post" style="display:inline-block;">
                                             <input type="hidden" name="issueId" id="issueId" value="">
                                             <input type="hidden" name="ignoreAllIssueFlag" id="ignoreAllIssueFlag">
-                                            <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId']) ?>');">Ignore</button>
+                                            <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['dvId'] ?? '') ?>');">Ignore</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -159,7 +159,7 @@ include_once "header.php";
                             <tr>
                                 <?php foreach ($selectedColumns as $col): ?>
                                     <?php if($col != 'primary_key') {?>
-                                        <th><?= htmlspecialchars($col) ?></th>
+                                        <th><?= htmlspecialchars($col ?? '') ?></th>
                                     <?php } ?>
                                 <?php endforeach; ?>
                                 <th>Actions</th>

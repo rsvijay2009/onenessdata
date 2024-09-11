@@ -61,3 +61,8 @@ CREATE TABLE `debug_log` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 );
+
+DROP TABLE IF EXISTS `temp_table_ids`;
+CREATE TABLE `temp_table_ids` (
+  `table_id` int DEFAULT NULL
+);

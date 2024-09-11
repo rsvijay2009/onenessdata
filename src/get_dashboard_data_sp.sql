@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `GetDashboardData`(IN dashboard_table_name VARCHAR(64), IN table_name VARCHAR(64))
+CREATE PROCEDURE `GetDashboardData`(IN dashboard_table_name VARCHAR(64), IN table_name VARCHAR(64))
 BEGIN
     DECLARE data_quality_correct_data INT;
     DECLARE data_quality_incorrect_data INT;

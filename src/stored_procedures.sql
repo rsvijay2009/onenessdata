@@ -1,7 +1,7 @@
 DROP PROCEDURE IF EXISTS GetDashboardData;
 
 DELIMITER $$
-CREATE PROCEDURE `GetDashboardData`(IN table_name VARCHAR(64))
+CREATE PROCEDURE `GetDashboardData`(IN dashboard_table_name VARCHAR(64), IN table_name VARCHAR(64))
 BEGIN
     DECLARE data_quality_correct_data INT;
     DECLARE data_quality_incorrect_data INT;
@@ -14,14 +14,41 @@ BEGIN
     DECLARE others_issue INT;
     DECLARE null_issue INT;
     DECLARE overall_correct_data INT;
-	DECLARE overall_incorrect_data INT;
+    DECLARE overall_incorrect_data INT;
+    DECLARE verification_table_name VARCHAR(64);
     DECLARE sql_query TEXT;
 
-    -- Construct the dynamic SQL query
-    SET @sql_query = CONCAT('SELECT data_quality_correct_data, data_quality_incorrect_data, text_issue, number_issue, date_issue, alphanumeric_issue, email_issue, duplicate_entries_issue, others_issue, null_issue, overall_correct_data, overall_incorrect_data ', 'INTO @data_quality_correct_data, @data_quality_incorrect_data, @text_issue, @number_issue, @date_issue, @alphanumeric_issue, @email_issue, @duplicate_entries_issue, @others_issue, @null_issue, @overall_correct_data, @overall_incorrect_data ',
-    'FROM ', table_name, ' LIMIT 1');
+    -- Concatenate '_data_verification' to the table name
+    SET verification_table_name = CONCAT(table_name, '_data_verification');
 
-    -- Prepare and execute the dynamic SQL
+    -- Construct the dynamic SQL query to get 'others_issue' count
+    SET @sql_query_others = CONCAT('SELECT COUNT(*) INTO @others_issue FROM ', verification_table_name, ' WHERE  ignore_flag = 0 AND remarks = ''Others''');
+    
+    -- Prepare and execute the dynamic SQL for 'Others' count
+    PREPARE stmt_others FROM @sql_query_others;
+    EXECUTE stmt_others;
+    DEALLOCATE PREPARE stmt_others;
+    
+    -- Assign the others issue count
+    SET others_issue = @others_issue;
+
+    -- Construct the dynamic SQL query to get 'null_issue' count
+    SET @sql_query_null = CONCAT('SELECT COUNT(*) INTO @null_issue FROM ', verification_table_name, ' WHERE ignore_flag = 0 AND (remarks = ''NULL'' OR remarks IS NULL)');
+    
+    -- Prepare and execute the dynamic SQL for 'Null' count
+    PREPARE stmt_null FROM @sql_query_null;
+    EXECUTE stmt_null;
+    DEALLOCATE PREPARE stmt_null;
+    
+    -- Assign the null issue count
+    SET null_issue = @null_issue;
+
+    -- Construct the dynamic SQL query for the other metrics
+    SET @sql_query = CONCAT('SELECT data_quality_correct_data, data_quality_incorrect_data, text_issue, number_issue, date_issue, alphanumeric_issue, email_issue, duplicate_entries_issue, overall_correct_data, overall_incorrect_data ',
+                            'INTO @data_quality_correct_data, @data_quality_incorrect_data, @text_issue, @number_issue, @date_issue, @alphanumeric_issue, @email_issue, @duplicate_entries_issue, @overall_correct_data, @overall_incorrect_data ',
+                            'FROM ', dashboard_table_name, ' LIMIT 1');
+
+    -- Prepare and execute the dynamic SQL for the main metrics
     PREPARE stmt FROM @sql_query;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
@@ -35,10 +62,8 @@ BEGIN
     SET alphanumeric_issue = @alphanumeric_issue;
     SET email_issue = @email_issue;
     SET duplicate_entries_issue = @duplicate_entries_issue;
-    SET others_issue = @others_issue;
-    SET null_issue = @null_issue;
     SET overall_correct_data = @overall_correct_data;
-	SET overall_incorrect_data = @overall_incorrect_data;
+    SET overall_incorrect_data = @overall_incorrect_data;
 
     -- Return the values
     SELECT data_quality_correct_data AS 'data_quality_correct_data', 
@@ -130,7 +155,7 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS DropAndCleanUpTable;
 
 DELIMITER $$
-CREATE PROCEDURE DropAndCleanUpTable(IN tableId INT)
+CREATE PROCEDURE `DropAndCleanUpTable`(IN tableId INT)
 BEGIN
     DECLARE _tableName VARCHAR(255);
     DECLARE _dataTypeTableName VARCHAR(255);
@@ -198,7 +223,7 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS CompareTables;
 
 DELIMITER $$
-CREATE PROCEDURE CompareTables(
+CREATE PROCEDURE `CompareTables`(
     IN tableA VARCHAR(255),
     IN tableB VARCHAR(255),
     IN tableA_Relationship VARCHAR(255),
@@ -293,16 +318,10 @@ BEGIN
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    INSERT INTO debug_log (message) VALUES (CONCAT('table_id: ', @table_id)); -- Debugging log
-    
     SET @project_id_query = CONCAT('SELECT project_id INTO @project_id FROM tables_list WHERE id = ', @table_id);
     PREPARE stmt FROM @project_id_query;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-    
-    INSERT INTO debug_log (message) VALUES (CONCAT('project_id: ', @project_id)); -- Debugging log
-
-    SELECT project_id; -- Debugging statement
 
     -- Open the cursor
     OPEN cur;
@@ -313,16 +332,47 @@ BEGIN
             LEAVE read_loop;
         END IF;
 
-        INSERT INTO debug_log (message) VALUES (CONCAT('Processing column: ', col_name, ' with datatype: ', dt_id)); -- Debugging log
+        -- Insert data that doesn't match any of the specified regular expressions with "Others" remark
+        SET @query = CONCAT(
+            'INSERT INTO ', @verification_table, 
+            ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+            'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Others" ',
+            'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$" ',
+            'AND ', col_name, ' NOT REGEXP "^[0-9]+$" ',
+            'AND ', col_name, ' NOT REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" ',
+            'AND ', col_name, ' NOT REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" ',
+            'AND ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$" ',
+            'AND ', col_name, ' NOT REGEXP "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,24}$" ',
+            'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
+        );
+        
+        -- Execute the query
+        PREPARE stmt FROM @query;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
 
-        -- Check for incorrect data based on datatype
+        -- Additional check for NULL, empty string, and 'NULL'
+        SET @null_check_query = CONCAT(
+            'INSERT INTO ', @verification_table,
+            ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+            'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "NULL" ',
+            'FROM ', tbl_name, ' WHERE (', col_name, ' IS NULL OR ', col_name, ' = "" OR ', col_name, ' = "NULL") ',
+            'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
+        );
+
+        -- Execute the query for NULL, empty string, and 'NULL'
+        PREPARE stmt FROM @null_check_query;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+
+        -- Now process the remaining data based on the specific regular expressions
         CASE dt_id
             WHEN 1 THEN -- Text
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"');
             WHEN 2 THEN -- Number
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$"');
             WHEN 3 THEN -- Date
-                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE NOT (',col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL OR ', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL',')');
+                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE NOT (', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL OR ', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)');
             WHEN 4 THEN -- Alphanumeric
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$"');
             WHEN 5 THEN -- Email
@@ -336,74 +386,60 @@ BEGIN
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
 
-        INSERT INTO debug_log (message) VALUES (CONCAT('Incorrect count for column: ', col_name, ' = ', @incorrect_count)); -- Debugging log
-
-        -- Insert incorrect data into the verification table
+        -- Insert incorrect data into the verification table if it doesn't already exist
         IF @incorrect_count > 0 THEN
             CASE dt_id
                 WHEN 1 THEN -- Text
                     SET @insert_query = CONCAT(
                         'INSERT INTO ', @verification_table,
                         ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Text" FROM ', tbl_name,  ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"'
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Text" ',
+                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$" ',
+                        'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
                 WHEN 2 THEN -- Number
                     SET @insert_query = CONCAT(
-                         'INSERT INTO ', @verification_table,
+                        'INSERT INTO ', @verification_table,
                         ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Number" FROM ',tbl_name, 
-                        ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$"'
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Number" ',
+                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$" ',
+                        'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
                 WHEN 3 THEN -- Date
-                    SET @insert_query = CONCAT('INSERT INTO ', @verification_table,
-                    ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
-                    'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Date" FROM ', tbl_name, ' WHERE NOT (',
-                    '(', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL) OR ',
-                    '(', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)',
-                    ')');
+                    SET @insert_query = CONCAT(
+                        'INSERT INTO ', @verification_table,
+                        ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Date" ',
+                        'FROM ', tbl_name, ' WHERE NOT (', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL OR ', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL) ',
+                        'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
+                    );
                 WHEN 4 THEN -- Alphanumeric
                     SET @insert_query = CONCAT(
-                         'INSERT INTO ', @verification_table,
+                        'INSERT INTO ', @verification_table,
                         ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Text" FROM ', tbl_name, 
-                        ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$"'
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Alphanumeric" ',
+                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$" ',
+                        'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
                 WHEN 5 THEN -- Email
                     SET @insert_query = CONCAT(
-                         'INSERT INTO ', @verification_table,
+                        'INSERT INTO ', @verification_table,
                         ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
-                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Email" FROM ',tbl_name, 
-                        ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,24}$"'
+                        'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Email" ',
+                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,24}$" ',
+                        'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
             END CASE;
 
             -- Execute the insert query
-            PREPARE insert_stmt FROM @insert_query;
-            EXECUTE insert_stmt;
-            DEALLOCATE PREPARE insert_stmt;
-            
-            INSERT INTO debug_log (message) VALUES (CONCAT('Inserted incorrect data for column: ', col_name)); -- Debugging log
+            PREPARE stmt FROM @insert_query;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
         END IF;
     END LOOP;
 
     -- Close the cursor
     CLOSE cur;
 
-    INSERT INTO debug_log (message) VALUES ('Remarks updated in verification table'); -- Debugging log
-
 END $$
 DELIMITER ;
-
-
-
-
-
-SELECT
-    dt.datatype,
-    COUNT(ev.column_name) AS issue_count
-FROM
-    demo.ecommerce_customers_datatype dt
-LEFT JOIN
-    demo.ecommerce_customers_data_verification ev ON dt.column_name = ev.column_name
-GROUP BY
-    dt.datatype;

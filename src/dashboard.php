@@ -25,7 +25,6 @@ if (!empty($tableName) && $isTableExists) {
         $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Close cursor to release the connection
 
-
         $dataVerificationTable = $tableName.'_data_verification';
 
         //Get the ignored issue to update the status, otherwise FindIncorrectData SP will make the ignore_flag as 0 for all the records

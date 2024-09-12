@@ -22,8 +22,6 @@ if (!empty($_POST["columns"])) {
     echo "No items were selected.";
     exit();
 }
-// Variable to track if transaction is active
-$transactionActive = false;
 $selectedColumns = array_map("trim", explode(",", $selectedColumns));
 if (($handle = fopen($csvFile, "r")) !== false) {
     $header = fgetcsv($handle);
@@ -35,12 +33,6 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         array_flip($selectedColumns)
     );
     try {
-        $pdo = new PDO($dsn, $username, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
-        // Begin a transaction
-        $pdo->beginTransaction();
-        $transactionActive = true;
         // Prepend the primary key definition to the array
         $columnDefinitions = array_unshift($selectedColumns, "`primary_key` INT AUTO_INCREMENT PRIMARY KEY");
         $columnDefinitions = array_map(function ($string) {
@@ -58,9 +50,15 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
-
-        // Insert data into dynamically created table
+        $isTableCreated = true;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        echo $e->getLine();
+        $isTableCreated = false;
+    }
+    if ($isTableCreated) {
         $sql = "INSERT INTO tables_list (name, project_id, original_table_name, table_type) VALUES (:name, :project_id, :original_table_name, :table_type)";
+
         $tableName = strtolower($tableName);
         $tableType = 'main';
         $stmt = $pdo->prepare($sql);
@@ -97,57 +95,63 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             $insertStmt->execute($insertData);
         }
 
-        // Create dynamic table for data verification
-        $isDataVerificationTableCreated = createDynamicTableForDataVerification($tableName, $pdo);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+        $stmt->execute();
+        $recordsCount = $stmt->fetchColumn();
 
-        $tableDatatypeinfo = [];
-        foreach ($columns as $index => $itemValue) {
-            // Check if the checkbox was checked and a corresponding option was selected
-            if (isset($dataTypes[$index]) && !empty($dataTypes[$index])) {
-                $stmt = $pdo->prepare("SELECT name FROM datatypes WHERE id = :dataTypeId");
-                $stmt->bindParam(":dataTypeId", $dataTypes[$index]);
-                $stmt->execute();
-                $dataType = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                $dataTypeName = $dataType[0]["name"] ?? null;
-
-                $columnNameWithoutSpace = addUnderScoreBetweenSpaceInString($columns[$index]);
-                $columnName = strtolower($columnNameWithoutSpace);
-
-                $tableDatatypeinfo[] = [
-                    "table_id" => $tableId,
-                    "table_name" => $tableName,
-                    "datatype_id" => $dataTypes[$index],
-                    "column_name" => $columnName,
-                    "datatype" => $dataTypeName,
-                ];
-            }
+        if($recordsCount == 0) {
+            deleteAllTableRelatedData($pdo, $tableId);
+            $tableId = null;
         }
 
-        $isDataTypeTableCreated = createDynamicTableTypes($tableName . '_datatype', $pdo);
+        //create dynamic table for data verification
+        createDynamicTableForDataVerification($tableName, $pdo);
+    }
+    //Insert the table datatype details
+    if ($tableId) {
+        try {
+            $tableDatatypeinfo = [];
+            foreach ($columns as $index => $itemValue) {
+                // Check if the checkbox was checked and a corresponding option was selected
+                if (isset($dataTypes[$index]) && !empty($dataTypes[$index])) {
+                    $stmt = $pdo->prepare(
+                        "SELECT name FROM datatypes WHERE id = :dataTypeId"
+                    );
+                    $stmt->bindParam(":dataTypeId", $dataTypes[$index]);
+                    $stmt->execute();
+                    $dataType = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $dataTypeName = $dataType[0]["name"] ?? null;
 
-        $dashBoardTableName = $tableName . "_dashboard";
-        $isDataInsertedIntoDatyTypeTable = insertIntoDynamicDatatypeTable($tableName, $originalTableName, $tableDatatypeinfo, $pdo);
+                    $columnNameWithoutSpace = addUnderScoreBetweenSpaceInString($columns[$index]);
+                    $columnName = strtolower($columnNameWithoutSpace);
 
-        // Create dynamic table to store dashboard data
-        $isDashboardTableCreated = createDynamicTableForDashboard($dashBoardTableName, $pdo);
-        $isDataInsertedIntoDashboardTable = insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);
+                    $tableDatatypeinfo[] = [
+                        "table_id" => $tableId,
+                        "table_name" => $tableName,
+                        "datatype_id" => $dataTypes[$index],
+                        "column_name" => $columnName,
+                        "datatype" => $dataTypeName,
+                    ];
+                }
+            }
+            $isDataTypeTableCreated = createDynamicTableTypes($tableName.'_datatype', $pdo);
 
-        fclose($handle);
+            if($isDataTypeTableCreated) {
+                $dashBoardTableName = $tableName."_dashboard";
+                insertIntoDynamicDatatypeTable($tableName, $originalTableName, $tableDatatypeinfo, $pdo);
 
-        // Commit the transaction if all operations are successful
-        $pdo->commit();
-        $transactionActive = false;
-    } catch (Exception $e) {
-        // Rollback the transaction if any operation fails
-
-        if ($transactionActive && $pdo->inTransaction()) {
-            $pdo->rollBack();
-            $transactionActive = false; // Reset the transaction active flag
-            $isTableCreated = false;
-            header("Location:home.php?msg=error");
-            exit;
+                //create dynamic table to store dashboard data
+                createDynamicTableForDashboard($dashBoardTableName, $pdo);
+                insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);
+            }
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            die($e->getMessage());
         }
     }
+
+    fclose($handle);
+    dropAlltheTablesIfAnyIssue($pdo, $tableName);
 } else {
     echo "No file or columns selected.";
 }

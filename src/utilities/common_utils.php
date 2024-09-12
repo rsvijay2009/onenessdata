@@ -405,3 +405,32 @@ function findDataQulaityUniqueness($pdo, $tableName, $columName)
     $stmt = $pdo->query("SELECT count(distinct($columName)) as uniqueness FROM $tableName");
     return $stmt->fetch(PDO::FETCH_ASSOC)['uniqueness'];
 }
+
+function dropAlltheTablesIfAnyIssue($pdo, $baseTableName)
+{
+    try {
+        $tablesList = [$baseTableName, $baseTableName.'_dashboard', $baseTableName.'_data_verification', $baseTableName.'_datatype'];
+
+        $isAllTablesAreNotExist = false;
+
+        foreach ($tablesList as $table) {
+            $query = "SHOW TABLES LIKE :table_name";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['table_name' => $table]);
+
+            if ($stmt->rowCount() == 0) {
+                $isAllTablesAreNotExist = true;
+                break;
+            }
+        }
+
+        if($isAllTablesAreNotExist) {
+            foreach ($tablesList as $table) {
+                $query = "DROP TABLE IF EXISTS $table";
+                $pdo->exec($query);
+            }
+        }
+    } catch (PDOException $e) {
+        die($e->getMessage());
+    }
+}

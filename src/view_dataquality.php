@@ -199,7 +199,7 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
                                 <?php foreach ($data as $row): ?>
                                     <tr>
                                         <?php foreach ($columns as $col): ?>
-                                            <td><?= htmlspecialchars($row[$col]) ?></td>
+                                            <td><?= htmlspecialchars($row[$col] ?? '') ?></td>
                                         <?php endforeach; ?>
                                     </tr>
                                 <?php endforeach; ?>
@@ -211,9 +211,9 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
                                             // Check if the current column should be highlighted
                                             $highlight = ($row['column_name'] == $col) ? ' style="color: red;"' : '';
                                             ?>
-                                            <td<?= $highlight ?>><span class="non-editable"><?= htmlspecialchars($row[$col]) ?></span>
+                                            <td<?= $highlight ?>><span class="non-editable"><?= htmlspecialchars($row[$col] ?? '') ?></span>
                                                 <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
-                                                    <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col) ?>" style="display: none;">
+                                                    <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col ?? '') ?>" style="display: none;">
                                                     <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['master_primary_key']) ?>" style="display: none;">
                                             </td>
                                         <?php endforeach; ?>

@@ -402,8 +402,14 @@ function calculateDataQualityNumbers($total, $correctDataPercentage, $inCorrectD
 
 function findDataQulaityUniqueness($pdo, $tableName, $columName)
 {
-    $stmt = $pdo->query("SELECT count(distinct($columName)) as uniqueness FROM $tableName");
-    return $stmt->fetch(PDO::FETCH_ASSOC)['uniqueness'];
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM $tableName");
+    $row = $stmt->fetch();
+    $totalRows = $row['count'];
+
+    $stmt1 = $pdo->query("SELECT count(distinct($columName)) as uniqueness FROM $tableName");
+    $uniqueRows = $stmt1->fetch(PDO::FETCH_ASSOC)['uniqueness'];
+
+    return round(($uniqueRows / $totalRows) * 100);
 }
 
 function dropAlltheTablesIfAnyIssue($pdo, $baseTableName)

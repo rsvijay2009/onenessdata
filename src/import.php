@@ -51,61 +51,64 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
         $isTableCreated = true;
-    } catch (PDOException $e) {
-        echo $e->getMessage();
-        echo $e->getLine();
+    } catch (Exception $e) {
         $isTableCreated = false;
+        dropAlltheTablesIfAnyIssue($pdo, $tableName);
     }
     if ($isTableCreated) {
-        $sql = "INSERT INTO tables_list (name, project_id, original_table_name, table_type) VALUES (:name, :project_id, :original_table_name, :table_type)";
+        try {
+            $sql = "INSERT INTO tables_list (name, project_id, original_table_name, table_type) VALUES (:name, :project_id, :original_table_name, :table_type)";
 
-        $tableName = strtolower($tableName);
-        $tableType = 'main';
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(":name", $tableName);
-        $stmt->bindParam(":project_id", $projectId);
-        $stmt->bindParam(":original_table_name", $originalTableName);
-        $stmt->bindValue(":table_type", $tableType);
-        $stmt->execute();
-        $tableId = $pdo->lastInsertId();
+            $tableName = strtolower($tableName);
+            $tableType = 'main';
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(":name", $tableName);
+            $stmt->bindParam(":project_id", $projectId);
+            $stmt->bindParam(":original_table_name", $originalTableName);
+            $stmt->bindValue(":table_type", $tableType);
+            $stmt->execute();
+            $tableId = $pdo->lastInsertId();
 
-        unset($selectedColumns[0]);
-        $selectedColumns[] = 'original_table_name';
-        $insertColumns = implode(", ", array_map(function ($string) {
-            $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
-            $col = strtolower($stringWithoutSpace);
-            return "`$col`";
-        }, $selectedColumns));
-        $insertValues = implode(", ", array_fill(0, count($selectedColumns), "?"));
-        $insertSQL = "INSERT INTO `$tableName` ($insertColumns) VALUES ($insertValues)";
-        $insertStmt = $pdo->prepare($insertSQL);
+            unset($selectedColumns[0]);
+            $selectedColumns[] = 'original_table_name';
+            $insertColumns = implode(", ", array_map(function ($string) {
+                $stringWithoutSpace = addUnderScoreBetweenSpaceInString($string);
+                $col = strtolower($stringWithoutSpace);
+                return "`$col`";
+            }, $selectedColumns));
+            $insertValues = implode(", ", array_fill(0, count($selectedColumns), "?"));
+            $insertSQL = "INSERT INTO `$tableName` ($insertColumns) VALUES ($insertValues)";
+            $insertStmt = $pdo->prepare($insertSQL);
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $insertData = [];
-            foreach ($selectedIndices as $col => $index) {
-                if (isset($row[$index]) && $row[$index] !== '') {
-                    $insertData[] = $row[$index];
-                } else {
-                    $insertData[] = null; // Set null for empty values
+            while (($row = fgetcsv($handle)) !== false) {
+                $insertData = [];
+                foreach ($selectedIndices as $col => $index) {
+                    if (isset($row[$index]) && $row[$index] !== '') {
+                        $insertData[] = $row[$index];
+                    } else {
+                        $insertData[] = null; // Set null for empty values
+                    }
                 }
+                $insertData[] = $tableId;
+                $insertData[] = $tableName;
+                $insertData[] = $originalTableName;
+                $insertStmt->execute($insertData);
             }
-            $insertData[] = $tableId;
-            $insertData[] = $tableName;
-            $insertData[] = $originalTableName;
-            $insertStmt->execute($insertData);
+
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+            $stmt->execute();
+            $recordsCount = $stmt->fetchColumn();
+
+            if($recordsCount == 0) {
+                deleteAllTableRelatedData($pdo, $tableId);
+                $tableId = null;
+            }
+
+            //create dynamic table for data verification
+            createDynamicTableForDataVerification($tableName, $pdo);
+        } catch(Exception $e) {
+            dropAlltheTablesIfAnyIssue($pdo, $tableName);
         }
-
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
-        $stmt->execute();
-        $recordsCount = $stmt->fetchColumn();
-
-        if($recordsCount == 0) {
-            deleteAllTableRelatedData($pdo, $tableId);
-            $tableId = null;
-        }
-
-        //create dynamic table for data verification
-        createDynamicTableForDataVerification($tableName, $pdo);
     }
     //Insert the table datatype details
     if ($tableId) {
@@ -144,14 +147,12 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 createDynamicTableForDashboard($dashBoardTableName, $pdo);
                 insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);
             }
-        } catch (PDOException $e) {
-            echo "Error: " . $e->getMessage();
-            die($e->getMessage());
+        } catch(Exception $e) {
+            dropAlltheTablesIfAnyIssue($pdo, $tableName);
         }
     }
 
     fclose($handle);
-    dropAlltheTablesIfAnyIssue($pdo, $tableName);
 } else {
     echo "No file or columns selected.";
 }

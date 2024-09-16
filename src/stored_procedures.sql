@@ -1,5 +1,6 @@
 DROP PROCEDURE IF EXISTS CompareTables;
 
+DELIMITER $$
 CREATE PROCEDURE CompareTables(
     IN tableA VARCHAR(255),
     IN tableB VARCHAR(255),
@@ -54,11 +55,13 @@ BEGIN
     PREPARE stmt FROM @select_sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-END
+END $$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS DeleteProjectData;
 
+DELIMITER $$
 CREATE PROCEDURE DeleteProjectData (IN project_id INT)
 BEGIN
     DECLARE done INT DEFAULT 0;
@@ -118,11 +121,13 @@ BEGIN
     CLOSE cur;
     -- Delete the record from projects table
     DELETE FROM projects WHERE id = project_id;
-END
+END $$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS DropAndCleanUpTable;
 
+DELIMITER $$
 CREATE PROCEDURE DropAndCleanUpTable(IN tableId INT)
 BEGIN
     DECLARE _tableName VARCHAR(255);
@@ -183,11 +188,13 @@ BEGIN
 
     -- Delete the entry from tables_list
     DELETE FROM tables_list WHERE id = tableId;
-END
+END $$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS FindIncorrectData;
 
+DELIMITER $$
 CREATE PROCEDURE FindIncorrectData (IN tbl_name VARCHAR(255), IN datatype_tbl_name VARCHAR(255))
 BEGIN
     DECLARE done INT DEFAULT FALSE;
@@ -343,11 +350,13 @@ BEGIN
 
     -- Close the cursor
     CLOSE cur;
-END
+END $$
+DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS GetDashboardData;
 
+DELIMITER $$
 CREATE PROCEDURE GetDashboardData (IN dashboard_table_name VARCHAR(64), IN table_name VARCHAR(64))
 BEGIN
     DECLARE data_quality_correct_data INT;
@@ -425,4 +434,5 @@ BEGIN
            null_issue AS 'null_issue',
            overall_correct_data AS 'overall_correct_data',
            overall_incorrect_data AS 'overall_incorrect_data';
-END
+END $$
+DELIMITER ;

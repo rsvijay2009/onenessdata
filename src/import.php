@@ -94,7 +94,6 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 $insertData[] = $originalTableName;
                 $insertStmt->execute($insertData);
             }
-            sleep(5);
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
             $stmt->execute();
             $recordsCount = $stmt->fetchColumn();

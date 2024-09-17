@@ -62,7 +62,7 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS DeleteProjectData;
 
 DELIMITER $$
-CREATE PROCEDURE DeleteProjectData (IN project_id INT)
+CREATE PROCEDURE DeleteProjectData (IN projectId INT)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE base_table_name VARCHAR(255);
@@ -74,7 +74,7 @@ BEGIN
     DECLARE cur CURSOR FOR 
         SELECT `name` 
         FROM tables_list 
-        WHERE project_id = project_id;
+        WHERE project_id = projectId;
     
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
@@ -120,7 +120,7 @@ BEGIN
 
     CLOSE cur;
     -- Delete the record from projects table
-    DELETE FROM projects WHERE id = project_id;
+    DELETE FROM projects WHERE id = projectId;
 END $$
 DELIMITER ;
 

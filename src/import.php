@@ -98,13 +98,13 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             $stmt->execute();
             $recordsCount = $stmt->fetchColumn();
 
+             //create dynamic table for data verification
+             createDynamicTableForDataVerification($tableName, $pdo);
+
             if($recordsCount == 0) {
                 deleteAllTableRelatedData($pdo, $tableId);
                 $tableId = null;
             }
-
-            //create dynamic table for data verification
-            createDynamicTableForDataVerification($tableName, $pdo);
         } catch(Exception $e) {
             dropAlltheTablesIfAnyIssue($pdo, $tableName);
         }

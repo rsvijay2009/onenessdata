@@ -142,8 +142,8 @@ BEGIN
         GET DIAGNOSTICS CONDITION 1
             @p1 = RETURNED_SQLSTATE,
             @p2 = MESSAGE_TEXT;
-        INSERT INTO error_log (error_time, error_message)
-        VALUES (NOW(), CONCAT('SQLSTATE: ', @p1, ', Error: ', @p2));
+        INSERT INTO debug_log (message, created_at)
+        VALUES (CONCAT('SQLSTATE: ', @p1, ', Error: ', @p2), NOW());
     END;
     
     -- Select the table name from tables_list

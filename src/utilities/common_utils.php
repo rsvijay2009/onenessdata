@@ -373,7 +373,33 @@ function calculateDataQualityPercentage($pdo, $tableName, $columName)
     }
 }
 
-function calculateDataQualityNumbers($total, $correctDataPercentage, $inCorrectDataPercentage)
+function calculateDataQualityNumbers($pdo, $tableName)
+{
+    $totalRecordsStmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
+    $totalRecordsStmt->execute();
+    $totalRecords = $totalRecordsStmt->fetchColumn();
+
+    $dataVerificationTableName = $tableName.'_data_verification';
+    $incorrectDataStmt = $pdo->prepare("SELECT count(DISTINCT(master_primary_key)) from $dataVerificationTableName");
+    $incorrectDataStmt->execute();
+    $totalIncorrectRecords = $incorrectDataStmt->fetchColumn();
+
+    $totalCorrectRecords = $totalRecords - $totalIncorrectRecords;
+
+    $correctDataPercentage   = ($totalCorrectRecords / $totalRecords) * 100;
+    $inCorrectDataPercentage = ($totalIncorrectRecords / $totalRecords) * 100;
+
+
+    return [
+        'total_records' => $totalRecords,
+        'correct_data_count' => $totalCorrectRecords,
+        'incorrect_data_count' => $totalIncorrectRecords,
+        'correct_data_percentage' => round($correctDataPercentage),
+        'incorrect_data_percentage' => round($inCorrectDataPercentage),
+    ];
+}
+
+function calculateDataQualityNumbersOld($total, $correctDataPercentage, $inCorrectDataPercentage)
 {
     // Step 1: Round both counts
     $correctDataCount = $total * ($correctDataPercentage / 100);

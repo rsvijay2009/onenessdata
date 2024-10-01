@@ -69,6 +69,13 @@ if (!empty($tableName) && $isTableExists) {
 }
 $dataQualityPercentage = [];
 include_once "header.php";
+
+$dataQualityData = calculateDataQualityNumbers($pdo, $tableName);
+$overallInCorrectDataPercentage = $dataQualityData['incorrect_data_percentage'] ?? 0;
+$overallCorrectDataPercentage = $dataQualityData['correct_data_percentage'] ?? 0;
+$overallCorrectDataCount = $dataQualityData['correct_data_count'] ?? 0;
+$overallIncorrectDataCount = $dataQualityData['incorrect_data_count'] ?? 0;
+$totalRecords =  $dataQualityData['total_records'] ?? 0;
 ?>
 <link rel="stylesheet" href="styles/dashboard.css">
 </head>
@@ -132,7 +139,7 @@ include_once "header.php";
                 </div>
                 <div class="col-md-4">
                     <div class="card">
-                    <h5 class="card-title">Total Records</h5>
+                    <h5 class="card-title">Total Records (<?=$totalRecords?>)</h5>
                         <div class="card-body">
                             <canvas id="barChart" style="margin-top:53px;"></canvas>
                         </div>
@@ -193,23 +200,6 @@ include_once "header.php";
 </div>
 <?php
 }
-
-//Calculate overall data quality percentage
-$overallCorrectData = 0;
-foreach($dataQualityPercentage as  $dqp) {
-    $overallCorrectData+= $dqp['correct_data_percentage'] ?? 0;
-}
-$overallCorrectDataPercentage = round($overallCorrectData / count($columns));
-$overallInCorrectDataPercentage = 100 - $overallCorrectDataPercentage;
-
-
-$totalRecordsStmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
-$totalRecordsStmt->execute();
-$totalRecords = $totalRecordsStmt->fetchColumn();
-
-$dataQualityNumbers = calculateDataQualityNumbers($totalRecords, $overallCorrectDataPercentage, $overallInCorrectDataPercentage);
-$overallCorrectDataCount = $dataQualityNumbers['correct_data_count'] ?? 0;
-$overallIncorrectDataCount = $dataQualityNumbers['incorrect_data_count'] ?? 0;
 ?>
 <script>
 // Register the Datalabels plugin with Chart.js
@@ -238,7 +228,7 @@ const pieChartconfig = {
             };
             const url = urlMap[label];
             if (url) {
-                window.open(url, '_blank');
+                window.location.href = url;
             }
         }
     },
@@ -321,7 +311,7 @@ var barChart = new Chart(ctx2, {
                 const url = urlMap[label];
                 console.log(url);
                 if (url) {
-                    window.open(url, '_blank');
+                    window.location.href = url;
                 }
             }
         },

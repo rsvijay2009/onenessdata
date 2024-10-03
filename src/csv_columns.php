@@ -7,7 +7,20 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $error = "";
 $tableName = $_REQUEST["table_name"];
 $projectId = $_REQUEST["project_id"];
+$projectName = $_REQUEST["projectName"];
 
+if (!empty($tableName) && !empty($projectName)) {
+    $tableWithProjectName = strtolower($projectName."_".$tableName);
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :dbname AND TABLE_NAME = :tablename");
+    $stmt->bindParam(':dbname', $dbname);
+    $stmt->bindParam(':tablename', $tableWithProjectName);
+    $stmt->execute();
+
+    if ($stmt->fetchColumn() > 0) {
+        header("Location: home.php?error=table");
+        exit();
+    }
+}
 $projectSql = $pdo->prepare("select name FROM projects where id = $projectId");
 $projectSql->execute();
 $project = $projectSql->fetch(PDO::FETCH_ASSOC);

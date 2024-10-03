@@ -14,6 +14,10 @@ if ($requestErr == "table") {
     $error = "Something went wrong. Please try again";
 } elseif($requestErr == 'invalid_table') {
     $error = "Invalid table name. Please use only letters, numbers, and underscores, and start with a letter or underscore.";
+} elseif($requestErr == 'file_type') {
+    $error = "Please upload CSV files only.";
+}  elseif($requestErr == 'file_size') {
+    $error = "The maximum allowed file size is 10MB";
 }
 if($requestSuccessMsg == "table") {
     $userNotificationMsg = 'Table deleted successfully';
@@ -40,6 +44,7 @@ include_once "header.php";
             <p class="errorMsg" id="errorMsg" style="color:red;padding-bottom:10px;"><?=$error?></p>
         <?php } ?>
         <form action="upload.php" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="projectNameFromList" id="projectNameFromList" value="">
             <div class="mb-3">
                 <label for="projectName" class="form-label">Project Name</label>
                 <input type="text" class="form-control" id="projectName" name="projectName" placeholder="Enter project name">

@@ -10,6 +10,9 @@ projectName.addEventListener('input', function() {
 });
 projectList.addEventListener('change', function() {
     const selectedValue = this.value;
+    const selectedText = projectList.options[projectList.selectedIndex].text;
+    document.getElementById('projectNameFromList').value = selectedText;
+
     if (selectedValue.trim() !== '') {
         projectName.disabled = true;
     } else {

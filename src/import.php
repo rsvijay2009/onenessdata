@@ -78,7 +78,10 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             }, $selectedColumns));
             $insertValues = implode(", ", array_fill(0, count($selectedColumns), "?"));
             $insertSQL = "INSERT INTO `$tableName` ($insertColumns) VALUES ($insertValues)";
-            $insertStmt = $pdo->prepare($insertSQL);
+
+            $batchData = [];
+            $batchSize = 1000; // Batch size for inserting
+            $rowCount = 0;
 
             while (($row = fgetcsv($handle)) !== false) {
                 $insertData = [];
@@ -92,33 +95,43 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 $insertData[] = $tableId;
                 $insertData[] = $tableName;
                 $insertData[] = $originalTableName;
-                $insertStmt->execute($insertData);
+
+                $batchData[] = $insertData;
+                $rowCount++;
+
+                // Perform batch insert when batch size is reached
+                if ($rowCount % $batchSize === 0) {
+                    batchInsert($pdo, $insertSQL, $batchData);
+                    $batchData = []; // Reset batch data
+                }
+            }
+
+            // Insert remaining data if any
+            if (!empty($batchData)) {
+                batchInsert($pdo, $insertSQL, $batchData);
             }
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tableName");
             $stmt->execute();
             $recordsCount = $stmt->fetchColumn();
 
-             //create dynamic table for data verification
-             createDynamicTableForDataVerification($tableName, $pdo);
-
             if($recordsCount == 0) {
                 deleteAllTableRelatedData($pdo, $tableId);
                 $tableId = null;
+            } else {
+                //create dynamic table for data verification
+                createDynamicTableForDataVerification($tableName, $pdo);
             }
         } catch(Exception $e) {
             dropAlltheTablesIfAnyIssue($pdo, $tableName);
         }
     }
-    //Insert the table datatype details
+    // Insert the table datatype details
     if ($tableId) {
         try {
             $tableDatatypeinfo = [];
             foreach ($columns as $index => $itemValue) {
-                // Check if the checkbox was checked and a corresponding option was selected
                 if (isset($dataTypes[$index]) && !empty($dataTypes[$index])) {
-                    $stmt = $pdo->prepare(
-                        "SELECT name FROM datatypes WHERE id = :dataTypeId"
-                    );
+                    $stmt = $pdo->prepare("SELECT name FROM datatypes WHERE id = :dataTypeId");
                     $stmt->bindParam(":dataTypeId", $dataTypes[$index]);
                     $stmt->execute();
                     $dataType = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -142,7 +155,6 @@ if (($handle = fopen($csvFile, "r")) !== false) {
                 $dashBoardTableName = $tableName."_dashboard";
                 insertIntoDynamicDatatypeTable($tableName, $originalTableName, $tableDatatypeinfo, $pdo);
 
-                //create dynamic table to store dashboard data
                 createDynamicTableForDashboard($dashBoardTableName, $pdo);
                 insertIntoDynamicDashboardTable($dashBoardTableName, $pdo);
             }
@@ -157,4 +169,12 @@ if (($handle = fopen($csvFile, "r")) !== false) {
 }
 
 header("Location:dashboard.php?table_name=$tableName&project=$projectName");
+
+// Helper function for batch insert
+function batchInsert($pdo, $insertSQL, $batchData) {
+    $insertStmt = $pdo->prepare($insertSQL);
+    foreach ($batchData as $data) {
+        $insertStmt->execute($data);
+    }
+}
 ?>

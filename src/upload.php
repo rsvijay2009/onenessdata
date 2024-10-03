@@ -5,20 +5,8 @@ include "database.php";
 $error = "";
 $tableName = $_POST["tableName"] ?? "";
 $projectName = $_POST["projectName"] ?? "";
-$projectId = $_POST["projectList"] ?? "";
+$projectId = $_POST["projectList"] ?? 0;
 
-if (!empty($tableName)) {
-    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $tableName)) {
-        $error = "invalid_table";
-    }
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :dbname AND TABLE_NAME = :tablename");
-    $stmt->bindParam(':dbname', $dbname);
-    $stmt->bindParam(':tablename', strtolower($tableName));
-    $stmt->execute();
-    if ($stmt->fetchColumn() > 0) {
-        $error = "table";
-    }
-}
 if (!empty($projectName)) {
     $stmt = $pdo->prepare("SELECT id FROM projects WHERE name = :projectName");
     $stmt->bindParam(":projectName", $projectName);
@@ -46,13 +34,20 @@ if (!empty($error)) {
     }
     $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
     $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $fileSize = $_FILES['fileToUpload']['size'];
+    $fileSizeMB = ($fileSize / 1024) / 1024;
 
     if ($fileType != "csv") {
-        echo "Sorry, only CSV files are allowed.";
+        header("Location: home.php?error=file_type");
+        exit();
+    }
+    if ($fileSizeMB > 10) {
+        header("Location: home.php?error=file_size&size=$fileSizeMB");
         exit();
     }
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        header("Location: csv_columns.php?file=" .urlencode($target_file) ."&table_name=" .$tableName."&project_id=".$projectId);
+        $projectName = ($projectId > 0) ? $_POST['projectNameFromList'] :  $_POST["projectName"];
+        header("Location: csv_columns.php?file=" .urlencode($target_file) ."&table_name=" .$tableName."&project_id=".$projectId."&projectName=".$projectName);
     } else {
         echo "Sorry, there was an error uploading your file.";
     }

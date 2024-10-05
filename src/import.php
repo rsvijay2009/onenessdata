@@ -25,6 +25,7 @@ if (!empty($_POST["columns"])) {
 $selectedColumns = array_map("trim", explode(",", $selectedColumns));
 if (($handle = fopen($csvFile, "r")) !== false) {
     $header = fgetcsv($handle);
+    rewind($handle);
     $indices = array_flip($header);
     $selectedColumns[] = "table_id";
     $selectedColumns[] = "table_name";
@@ -54,6 +55,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
     } catch (Exception $e) {
         $isTableCreated = false;
         dropAlltheTablesIfAnyIssue($pdo, $tableName);
+        die("Error message 1:".$e->getMessage());
     }
     if ($isTableCreated) {
         try {
@@ -123,6 +125,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             }
         } catch(Exception $e) {
             dropAlltheTablesIfAnyIssue($pdo, $tableName);
+            die("Error message 2:".$e->getMessage());
         }
     }
     // Insert the table datatype details
@@ -160,6 +163,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
             }
         } catch(Exception $e) {
             dropAlltheTablesIfAnyIssue($pdo, $tableName);
+            die("Error message 3:".$e->getMessage());
         }
     }
 
@@ -168,13 +172,16 @@ if (($handle = fopen($csvFile, "r")) !== false) {
     echo "No file or columns selected.";
 }
 
-header("Location:dashboard.php?table_name=$tableName&project=$projectName");
-
-// Helper function for batch insert
 function batchInsert($pdo, $insertSQL, $batchData) {
-    $insertStmt = $pdo->prepare($insertSQL);
-    foreach ($batchData as $data) {
-        $insertStmt->execute($data);
+    try {
+        $insertStmt = $pdo->prepare($insertSQL);
+        foreach ($batchData as $data) {
+            $insertStmt->execute($data);
+        }
+    } catch (PDOException $e) {
+        die("Error during batch insert: " . $e->getMessage());
     }
 }
+
+header("Location:dashboard.php?table_name=$tableName&project=$projectName");
 ?>

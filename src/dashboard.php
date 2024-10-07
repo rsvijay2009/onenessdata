@@ -139,7 +139,7 @@ $totalRecords =  $dataQualityData['total_records'] ?? 0;
                 </div>
                 <div class="col-md-4">
                     <div class="card">
-                    <h5 class="card-title">Total Records (<?=$totalRecords?>)</h5>
+                    <h5 class="card-title">Total Records: <?=$totalRecords?></h5>
                         <div class="card-body">
                             <canvas id="barChart" style="margin-top:53px;"></canvas>
                         </div>

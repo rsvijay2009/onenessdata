@@ -49,6 +49,7 @@ if (($handle = fopen($csvFile, "r")) !== false) {
         $originalTableName = $tableName;
         $tableName = $projectName."_".$tableName;
         $tableName = (strlen($tableName) > 20) ? substr($tableName, 0, 20) : $tableName;
+        $table_name = strtolower($tableName);
         $createTableSQL = "CREATE TABLE `$tableName` (" . implode(", ", $columnDefinitions) . ")";
         $pdo->exec($createTableSQL);
         $isTableCreated = true;

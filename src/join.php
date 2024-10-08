@@ -23,7 +23,7 @@ $successMsg = "";
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-        <div class="col-md-10">
+        <div class="col-md-10" style="margin-top:50px;">
             <form action="viewjoin.php">
                 <input type="hidden" name="joinType" id="joinType" value="">
                 <input type="hidden" id="table1JoinColumns" value="">

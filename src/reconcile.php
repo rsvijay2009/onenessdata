@@ -22,7 +22,7 @@ include_once "header.php";
       <input type="hidden" id="relationshipColumnsToCompare" name="relationshipColumnsToCompare" value="">
       <input type="hidden" id="columnToCompare" name="columnToCompare" value="">
       <!-- Left Card -->
-      <div class="col-md-5"  style="margin-top:40px;">
+      <div class="col-md-5"  style="margin-top:50px;">
         <div class="card" id="prepareDiv" style="cursor:pointer;">
           <div class="plus-icon" style="font-size:30px;">Prepare</div>
           <div class="card-body"></div>

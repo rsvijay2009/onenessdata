@@ -252,10 +252,11 @@ BEGIN
             'AND ', col_name, ' NOT REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" ',
             'AND ', col_name, ' NOT REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" ',
             'AND ', col_name, ' NOT REGEXP "^[a-zA-Z0-9]+$" ',
+            'AND ', col_name, ' NOT REGEXP "^[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?$" ',
             'AND ', col_name, ' NOT REGEXP "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,24}$" ',
             'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
         );
-        
+
         -- Execute the query
         PREPARE stmt FROM @query;
         EXECUTE stmt;
@@ -279,8 +280,8 @@ BEGIN
         CASE dt_id
             WHEN 1 THEN -- Text
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$"');
-            WHEN 2 THEN -- Number
-                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$"');
+            WHEN 2 THEN -- Number with support for commas and decimals
+                SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?$"');
             WHEN 3 THEN -- Date
                 SET @query = CONCAT('SELECT COUNT(*) INTO @incorrect_count FROM ', tbl_name, ' WHERE NOT (', col_name, ' REGEXP "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d/%m/%Y") IS NOT NULL OR ', col_name, ' REGEXP "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" AND STR_TO_DATE(', col_name, ', "%d-%m-%Y") IS NOT NULL)');
             WHEN 4 THEN -- Alphanumeric
@@ -307,12 +308,12 @@ BEGIN
                         'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[a-zA-Z ]+$" ',
                         'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
-                WHEN 2 THEN -- Number
+                WHEN 2 THEN -- Number with commas and decimals
                     SET @insert_query = CONCAT(
                         'INSERT INTO ', @verification_table,
                         ' (table_id, table_name, original_table_name, master_primary_key, column_name, project_id, remarks) ',
                         'SELECT table_id, "', tbl_name, '", "', tbl_name, '", primary_key, "', col_name, '", ', @project_id, ', "Number" ',
-                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]+$" ',
+                        'FROM ', tbl_name, ' WHERE ', col_name, ' NOT REGEXP "^[0-9]{1,3}(,[0-9]{3})*(\\.[0-9]+)?$" ',
                         'AND NOT EXISTS (SELECT 1 FROM ', @verification_table, ' WHERE master_primary_key = ', tbl_name, '.primary_key AND column_name = "', col_name, '")'
                     );
                 WHEN 3 THEN -- Date

@@ -25,7 +25,6 @@ if (!empty($_POST["columns"])) {
 $selectedColumns = array_map("trim", explode(",", $selectedColumns));
 if (($handle = fopen($csvFile, "r")) !== false) {
     $header = fgetcsv($handle);
-    rewind($handle);
     $indices = array_flip($header);
     $selectedColumns[] = "table_id";
     $selectedColumns[] = "table_name";

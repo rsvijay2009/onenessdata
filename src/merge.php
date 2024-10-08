@@ -122,7 +122,7 @@ include_once "header.php";
 <div class="container-fluid">
     <div class="row">
         <?php include_once "sidebar_template.php"; ?>
-        <div class="col-md-10">
+        <div class="col-md-10" style="margin-top:50px;">
             <form action="merge.php" method="post">
                     <input type="hidden" id="selected_tables" name="selected_tables" value="">
                     <!-- <input type="hidden" id="errMsg" name="errMsg" value=<?= $errorMsg ?>>

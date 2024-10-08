@@ -10,9 +10,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 <div style="display:flex;">
-<nav class="navbar navbar-expand-lg navbar-light" style="right:0;position: absolute;width: 15%;">
+<nav class="navbar navbar-expand-lg navbar-light" style="right:0;position: absolute;width: 20%;margin-top:6px;">
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" style="color:#71B6FA" href="home.php">Home</a>
+                </li>
                 <li class="nav-item">
                     <span class="nav-link" style="color:black;">Welcome <?=$_SESSION['username']?></span>
                 </li>

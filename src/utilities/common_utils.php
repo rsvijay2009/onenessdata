@@ -380,7 +380,7 @@ function calculateDataQualityNumbers($pdo, $tableName)
     $totalRecords = $totalRecordsStmt->fetchColumn();
 
     $dataVerificationTableName = $tableName.'_data_verification';
-    $incorrectDataStmt = $pdo->prepare("SELECT count(DISTINCT(master_primary_key)) from $dataVerificationTableName and ignore_flag = 0");
+    $incorrectDataStmt = $pdo->prepare("SELECT count(DISTINCT(master_primary_key)) from $dataVerificationTableName where ignore_flag = 0");
     $incorrectDataStmt->execute();
     $totalIncorrectRecords = $incorrectDataStmt->fetchColumn();
 

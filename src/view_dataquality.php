@@ -54,12 +54,7 @@ if ($dataQualityType == 'correct') {
     if($totalDataVerificationDataCount == 0) {
         $sqlQuery = $pdo->prepare("SELECT * FROM `$tableName`");
     } else {
-        $sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` t WHERE EXISTS (
-            SELECT 1
-            FROM `$dataVerificationTableName` dv
-            WHERE dv.master_primary_key = t.primary_key AND dv.ignore_flag = 1
-        )
-        OR 1;");
+        $sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` where primary_key not in (SELECT distinct master_primary_key FROM `$dataVerificationTableName` where ignore_flag=0);");
     }
     $sqlQuery->execute();
     $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);

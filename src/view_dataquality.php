@@ -10,31 +10,34 @@ $tableName = $_REQUEST['table'] ?? null;
 $dataQualityType = $_REQUEST['type'] ?? null;
 $projectName = $_REQUEST['project'] ?? '';
 $notificationMsg = '';
+
 // PDO connection setup
 $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$dataVerificationTableName = $tableName.'_data_verification';
-if(isset($_POST['ignoreAllIssueFlag']) && $_POST['ignoreAllIssueFlag'] != '') {
+$dataVerificationTableName = $tableName . '_data_verification';
+
+// Handle "Ignore All" functionality
+if (isset($_POST['ignoreAllIssueFlag']) && $_POST['ignoreAllIssueFlag'] != '') {
     $dvtQuery = $pdo->prepare("SELECT ec.*, ecdv.column_name, ecdv.master_primary_key FROM `$tableName` ec LEFT JOIN `$dataVerificationTableName` ecdv ON ec.primary_key = ecdv.master_primary_key WHERE ecdv.ignore_flag = 0");
     $dvtQuery->execute();
     $dvtQueryResults = $dvtQuery->fetchAll(PDO::FETCH_ASSOC);
-    $idsToIgnore = [];
-    foreach ($dvtQueryResults as $dvtQueryResult) {
-        $idsToIgnore[] = $dvtQueryResult['master_primary_key'];
-    }
-    if(!empty($idsToIgnore)) {
+    $idsToIgnore = array_column($dvtQueryResults, 'master_primary_key');
+
+    if (!empty($idsToIgnore)) {
         $idsToIgnore = implode(",", $idsToIgnore);
-        $updateQuery = $pdo->prepare("UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key in ($idsToIgnore)");
+        $updateQuery = $pdo->prepare("UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key IN ($idsToIgnore)");
         $updateQuery->execute();
         $notificationMsg = 'All the issues are ignored successfully';
     }
 }
-if(isset($_POST['issueId']) && $_POST['issueId'] != '') {
+
+// Handle ignoring individual issues
+if (isset($_POST['issueId']) && $_POST['issueId'] != '') {
     $issueId = $_POST['issueId'];
-    $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key = $issueId";
+    $query = "UPDATE $dataVerificationTableName SET ignore_flag = 1 WHERE master_primary_key = ?";
     $updateQuery = $pdo->prepare($query);
-    $updateQuery->execute();
+    $updateQuery->execute([$issueId]);
     $notificationMsg = 'Selected issue ignored successfully';
 }
 $columns = [];
@@ -43,32 +46,39 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $columns[] = $row['Field'];
 }
 $data = [];
-if($dataQualityType == 'correct') {
-    $sqlQuery = $pdo->prepare("select * from  `$tableName` where primary_key NOT IN(select master_primary_key from `$dataVerificationTableName`)");
+if ($dataQualityType == 'correct') {
+    $sqlQuery = $pdo->prepare("SELECT * FROM `$tableName` t WHERE t.primary_key IN (
+        SELECT master_primary_key
+        FROM `$dataVerificationTableName`
+        WHERE ignore_flag = 1
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM `$dataVerificationTableName` dv
+        WHERE dv.master_primary_key = t.primary_key AND dv.ignore_flag = 1
+    );");
+    $sqlQuery->execute();
+    $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($dataQualityType == 'incorrect') {
+    // Fetch unique records from $tableName and aggregate columns with issues
+    $sqlQuery = $pdo->prepare("SELECT ec.*, GROUP_CONCAT(ecdv.column_name) AS problematic_columns FROM `$tableName` ec LEFT JOIN `$dataVerificationTableName` ecdv ON ec.primary_key = ecdv.master_primary_key WHERE ecdv.ignore_flag = 0 GROUP BY ec.primary_key");
     $sqlQuery->execute();
     $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
 }
-if($dataQualityType == 'incorrect') {
-    $sqlQuery = $pdo->prepare("SELECT ec.*, ecdv.column_name, ecdv.master_primary_key FROM `$tableName` ec LEFT JOIN `$dataVerificationTableName` ecdv ON ec.primary_key = ecdv.master_primary_key WHERE ecdv.ignore_flag = 0");
-    $sqlQuery->execute();
-    $data = $sqlQuery->fetchAll(PDO::FETCH_ASSOC);
-}
-if(isset($_POST) && !empty($_POST['downloadType'])) {
-    // Query to fetch data
+// Handle data download
+if (isset($_POST['downloadType'])) {
     $stmt = $pdo->query("SELECT * FROM $tableName");
 
-    if($_POST['downloadType'] == 'csv') {
-         // Set headers to download file rather than display
+    if ($_POST['downloadType'] == 'csv') {
+        // Set headers for CSV
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename='.$tableName.'.csv');
+        header('Content-Disposition: attachment;filename=' . $tableName . '.csv');
 
-        // Output header row (if necessary)
         $firstRow = true;
         $sNo = 1;
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            unset($row['table_id']);
-            unset($row['primary_key']);
-            $row = array_merge(array('S.No' => $sNo), $row);
+            unset($row['table_id'], $row['primary_key']);
+            $row = array_merge(['S.No' => $sNo], $row);
             if ($firstRow) {
                 echo implode(",", array_keys($row)) . "\r\n";
                 $firstRow = false;
@@ -77,50 +87,35 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
             $sNo++;
         }
         exit;
-    } else if($_POST['downloadType'] == 'excel') {
-        // Create new Spreadsheet object
+    } elseif ($_POST['downloadType'] == 'excel') {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-    
+
         // Fetch and write the data
         $rowIndex = 1;
         $firstRow = true;
         $sNo = 1;
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            unset($row['table_id']);
-            unset($row['primary_key']);
-            $row = array_merge(array('S.No' => $sNo), $row);
+            unset($row['table_id'], $row['primary_key']);
+            $row = array_merge(['S.No' => $sNo], $row);
             if ($firstRow) {
-                // Write header
                 $sheet->fromArray(array_keys($row), NULL, 'A' . $rowIndex);
                 $firstRow = false;
                 $rowIndex++;
             }
-            // Write data
             $sheet->fromArray(array_values($row), NULL, 'A' . $rowIndex);
             $rowIndex++;
             $sNo++;
         }
-        // Clear any output buffer
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-    
-        // Set headers to download file rather than display
+        if (ob_get_length()) ob_end_clean();
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$tableName.'.xlsx"');
+        header('Content-Disposition: attachment;filename="' . $tableName . '.xlsx"');
         header('Cache-Control: max-age=0');
-    
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
-    } else if($_POST['downloadType'] == 'sql') {
-        // Query to fetch data
-        $stmt = $pdo->query("SELECT * FROM $tableName");
-
-        // Start output buffering to capture the SQL dump
+    } elseif ($_POST['downloadType'] == 'sql') {
         ob_start();
-
         // Output header for SQL file
         echo "-- SQL dump of table your_table\n";
         echo "DROP TABLE IF EXISTS your_table;\n";
@@ -130,17 +125,13 @@ if(isset($_POST) && !empty($_POST['downloadType'])) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $columns = array_keys($row);
             $values = array_map([$pdo, 'quote'], array_values($row));
-            echo "INSERT INTO your_table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
+            echo "INSERT INTO $tableName (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
         }
 
         // Capture the output buffer into a variable
         $sqlDump = ob_get_clean();
-
-        // Set headers to download file rather than display
         header('Content-Type: application/sql');
-        header('Content-Disposition: attachment;filename="'.$tableName.'.sql"');
-        header('Cache-Control: max-age=0');
-
+        header('Content-Disposition: attachment;filename="' . $tableName . '.sql"');
         echo $sqlDump;
         exit;
     }
@@ -208,23 +199,19 @@ include_once "header.php";
                                 <?php foreach ($data as $row): ?>
                                     <tr>
                                         <?php foreach ($columns as $col): ?>
-                                            <?php
-                                            // Check if the current column should be highlighted
-                                            $highlight = ($row['column_name'] == $col) ? ' style="color: red;"' : '';
-                                            ?>
-                                            <td<?= $highlight ?>><span class="non-editable"><?= htmlspecialchars($row[$col] ?? '') ?></span>
-                                                <input type="text" class="form-control editable" value="<?= htmlspecialchars($row[$col]) ?>" style="display: none;">
-                                                    <input type="hidden" id="columnName" class="form-control editable" value="<?= htmlspecialchars($col ?? '') ?>" style="display: none;">
-                                                    <input type="hidden" id="rowId" class="form-control editable" value="<?= htmlspecialchars($row['master_primary_key']) ?>" style="display: none;">
-                                            </td>
+                                        <?php
+                                        $problematicColumns = $row['problematic_columns'] ?? '';
+                                        $highlight = (strpos($problematicColumns, $col) !== false) ? ' style="color: red;"' : '';
+                                        ?>
+                                        <td<?= $highlight ?>><?= htmlspecialchars($row[$col] ?? '') ?></td>
                                         <?php endforeach; ?>
                                         <td style="width:13%;">
                                             <button class="btn btn-primary edit-btn">Edit</button>
                                             <button class="btn btn-success save-btn" style="display: none;">Save</button>
                                             <form name="ignoreIssueForm" method="post" style="display:inline-block;">
-                                                <input type="hidden" name="issueId" id="issueId" value="">
+                                                <input type="hidden" name="issueId" id="issueId">
                                                 <input type="hidden" name="ignoreAllIssueFlag" id="ignoreAllIssueFlag">
-                                                <button class="btn btn-primary" onclick="ignoreIssue('<?= htmlspecialchars($row['master_primary_key']) ?>');">Ignore</button>
+                                                <button class="btn btn-primary" type="button" onclick="ignoreIssue('<?= htmlspecialchars($row['primary_key']) ?>');">Ignore</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -233,7 +220,19 @@ include_once "header.php";
                         </tbody>
                     </table>
                 <?php } else {?>
-                    <div style="margin-top:60px; text-align:center; color:red; font-size:25px;">No data found in <?=$tableName?> table</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>data</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="margin-top:30px;text-align:center; color:red; font-weight:bold;">No incorrect data found <a href="dashboard.php?table_name=<?=$tableName?>&project=<?=$projectName?>">click here </a> to go back</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 <?php } ?>
                 </div>
              </div>
